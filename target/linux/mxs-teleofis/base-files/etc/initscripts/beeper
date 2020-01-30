@@ -1,0 +1,11 @@
+#!/bin/sh
+
+echo high > /sys/class/gpio/gpio61/direction
+usleep 300000
+echo low > /sys/class/gpio/gpio61/direction
+usleep 100000
+echo high > /sys/class/gpio/gpio61/direction
+usleep 300000
+echo low > /sys/class/gpio/gpio61/direction
+
+exit 0

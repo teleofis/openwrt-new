@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2017 teleofis
+
+START=12
+USE_PROCD=1
+
+start_service()
+{
+	procd_open_instance
+	/etc/initscripts/symlinks &
+	/etc/initscripts/modeminit &
+	/etc/initscripts/usbhost &
+	/etc/initscripts/rtcinit &
+	/etc/initscripts/gpsinit &
+	/etc/initscripts/upgrade &
+	procd_close_instance
+}

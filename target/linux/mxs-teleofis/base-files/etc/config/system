@@ -1,0 +1,37 @@
+
+config system
+	option hostname 'TELEOFIS-RTUx68V2'
+	option timezone 'MSK-3'
+	option zonename 'Europe/Moscow'
+
+config timeserver 'ntp'
+	option enable '1'
+	option enable_server '1'
+	list server '0.openwrt.pool.ntp.org'
+	list server '1.openwrt.pool.ntp.org'
+	list server '2.openwrt.pool.ntp.org'
+	list server '3.openwrt.pool.ntp.org'
+	option use_gps '0'
+
+config led
+	option name 'Power'
+	option trigger 'none'
+	option sysfs 'top:power'
+	option default '1'
+
+config led
+	option name 'Internet'
+	option sysfs 'middle:net'
+	option trigger 'netdev'
+	option default '0'
+	option dev '3g-internet'
+	option mode 'link'
+
+config led
+	option default '0'
+	option name 'Act'
+	option sysfs 'bottom:act'
+	option trigger 'netdev'
+	option dev '3g-internet'
+	option mode 'tx rx'
+
