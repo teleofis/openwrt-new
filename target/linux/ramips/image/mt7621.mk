@@ -1515,3 +1515,31 @@ define Device/zyxel_wap6805
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += zyxel_wap6805
+
+define Device/teleofis_lt70
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := Teleofis
+  DEVICE_MODEL := LT70
+  DEVICE_PACKAGES := \
+  kmod-sdhci-mt7620 kmod-usb3 kmod-can kmod-can-mcp251xfd kmod-pps kmod-pps-gpio kmod-usb-serial \
+  kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan kmod-usb-serial-cp210x \
+  kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
+  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi luci-proto-gre luci-proto-ip luci-i18n-base-en \
+  luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru luci-i18n-firewall-ru luci-i18n-opkg-ru \
+  simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
+  ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
+  pingcontrol luci-app-pingcontrol luci-i18n-pingconrtol-en luci-i18n-pingconrtol-ru \
+  pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
+  smstools3 smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
+  report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
+  openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
+  luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
+  strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
+  mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
+  base-files-common \
+  htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd \
+  ntpd ntp-utils
+endef
+TARGET_DEVICES += teleofis_lt70
