@@ -1690,7 +1690,9 @@ define Device/teleofis_lt70
   strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
   base-files-common \
-  htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd \
-  ntpd ntp-utils
+  htop iperf3 nano picocom zram-swap stm32flash i2c-tools gpsd gpsd-clients xl2tpd \
+  ntpd ntp-utils \
+  block-mount kmod-fs-ext4 \
+  -ip-tiny ip-full 
 endef
 TARGET_DEVICES += teleofis_lt70
