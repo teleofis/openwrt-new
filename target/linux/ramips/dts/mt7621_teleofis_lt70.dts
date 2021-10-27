@@ -50,8 +50,19 @@
 	can0_osc: can0_osc {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
-		clock-frequency = <40000000>;
+		clock-frequency = <24000000>;
 	};
+
+	/*spi1: spi-gpio {
+		status = "okay";
+		compatible = "spi-gpio";
+
+		sck-gpios = <&gpio 36 0>;
+		miso-gpios = <&gpio 37 0>;
+		mosi-gpios = <&gpio 38 0>;
+		cs-gpios = <&gpio 34 0>, <&gpio 35 0>;
+		num-chipselects = <2>;
+	};*/
 };
 
 &i2c {
@@ -100,21 +111,18 @@
 			};
 		};
 	};
-	/*
-	can@1 {
+	/*can@1 {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "microchip,mcp251xfd";
 		reg = <1>;
 
-		spi-max-frequency = <20000000>;
+		spi-max-frequency = <10000000>;
 		clocks = <&can0_osc>;
 
-		/*interrupt-parent = <&gpio>;
-		interrupts = <18 IRQ_TYPE_LEVEL_LOW>;*/
-		interrupts-extended = <&gpio 18 IRQ_TYPE_LEVEL_LOW>;
-	};
-	*/
+		interrupt-parent = <&gpio>;
+		interrupts = <18 IRQ_TYPE_EDGE_FALLING>;
+	};*/
 };
 
 &pcie {

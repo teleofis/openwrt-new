@@ -1674,7 +1674,7 @@ define Device/teleofis_lt70
   DEVICE_VENDOR := Teleofis
   DEVICE_MODEL := LT70
   DEVICE_PACKAGES := \
-  kmod-sdhci-mt7620 kmod-usb3 kmod-can kmod-can-mcp251xfd kmod-pps kmod-pps-gpio kmod-usb-serial \
+  kmod-sdhci-mt7620 kmod-usb3 kmod-can kmod-can-raw kmod-can-mcp251xfd kmod-pps kmod-pps-gpio kmod-usb-serial \
   kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan kmod-usb-serial-cp210x \
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   luci luci-theme-teleofis luci-proto-3g luci-proto-qmi luci-proto-gre luci-proto-ip luci-i18n-base-en \
