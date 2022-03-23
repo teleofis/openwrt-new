@@ -23,6 +23,9 @@ case "$board" in
 *wandboard)
 	ucidef_set_interface_wan 'eth0'
 	;;
+*)
+	ucidef_set_interface_lan 'eth0 eth1 eth2'
+	;;
 esac
 
 board_config_flush
