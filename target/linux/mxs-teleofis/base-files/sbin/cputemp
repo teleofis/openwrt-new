@@ -1,0 +1,7 @@
+#!/bin/sh
+
+ADCRAW=$(cat /sys/bus/iio/devices/iio:device0/in_temp8_raw)
+OUTPUT=$(( $((ADCRAW - 1075)) * 253 / 1000 ))
+echo "${OUTPUT}"
+
+exit 0

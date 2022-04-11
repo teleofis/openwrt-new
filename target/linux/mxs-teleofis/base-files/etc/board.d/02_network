@@ -1,0 +1,33 @@
+#!/bin/sh
+# Copyright (C) 2013-2015 OpenWrt.org
+
+. /lib/functions/uci-defaults.sh
+
+board_config_update
+
+board=$(board_name)
+
+case "$board" in
+*)
+	ucidef_set_interface_lan 'eth0 eth1'
+	MAC0=$(fw_printenv -n ethaddr  | sed -e s/://g)
+	MAC1=$(fw_printenv -n eth1addr | sed -e s/://g)
+	if [ "$MAC0" = "001122334455" -o "$MAC1" = "001122334466" -o "$MAC0" = "$MAC1" ]; then
+		SERIALNUM=$(getserialnum)
+		if [ "$SERIALNUM" != "0" ]; then
+			SERIALNUM=$(getserialnum | sed 's/\(..\)/\1:/g' | sed 's/.$//' | tr "a-z" "A-Z")
+			MAC0="F8:1D:"$SERIALNUM
+			fw_setenv ethaddr $MAC0
+			SERIALNUM=$((0x$(getserialnum)))
+			SERIALNUM=$(($SERIALNUM + 1))
+			SERIALNUM=$(echo "obase=16; $SERIALNUM" | bc | sed 's/\(..\)/\1:/g' | sed 's/.$//')
+			MAC1="F8:1D:"$SERIALNUM
+			fw_setenv eth1addr $MAC1
+		fi
+	fi
+	;;
+esac
+
+board_config_flush
+
+exit 0

@@ -1,0 +1,151 @@
+From 26f7295c4954c486db00b3b6d62edd92edbb2bb4 Mon Sep 17 00:00:00 2001
+From: iuncuim <iuncuim@gmail.com>
+Date: Wed, 23 Mar 2022 13:28:31 +0300
+Subject: [PATCH] NET: phy: imx28: fix phy swing on fec0 (revert to 4.14)
+
+---
+ drivers/net/phy/phy.c          | 89 ++++++++++++++++++-
+ include/linux/phy.h            |  4 +
+ 2 files changed, 92 insertions(+), 1 deletion(-)
+
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -924,6 +924,7 @@ void phy_state_machine(struct work_struct *work)
+ 	bool needs_aneg = false, do_suspend = false;
+ 	enum phy_state old_state;
+ 	int err = 0;
++	int old_link;
+ 
+ 	mutex_lock(&phydev->lock);
+ 
+@@ -936,13 +937,99 @@ void phy_state_machine(struct work_struct *work)
+ 	case PHY_DOWN:
+ 	case PHY_READY:
+ 		break;
++	case PHY_CHANGELINK:
++		err = phy_read_status(phydev);
++		if (err)
++			break;
++
++		if (phydev->link) {
++			phydev->state = PHY_RUNNING;
++			phy_link_up(phydev);
++		} else {
++			phydev->state = PHY_NOLINK;
++			phy_link_down(phydev, true);
++		}
++
++		if (phy_interrupt_is_valid(phydev))
++			err = phy_config_interrupt(phydev,
++						   PHY_INTERRUPT_ENABLED);
++		break;
+ 	case PHY_UP:
+ 		needs_aneg = true;
+ 
+ 		break;
++	case PHY_AN:
++		err = phy_read_status(phydev);
++		if (err < 0)
++			break;
++
++		/* If the link is down, give up on negotiation for now */
++		if (!phydev->link) {
++			phydev->state = PHY_NOLINK;
++			phy_link_down(phydev, true);
++			break;
++		}
++
++		/* Check if negotiation is done.  Break if there's an error */
++		err = phy_aneg_done(phydev);
++		if (err < 0)
++			break;
++
++		/* If AN is done, we're running */
++		if (err > 0) {
++			phydev->state = PHY_RUNNING;
++			phy_link_up(phydev);
++		} else if (0 == phydev->link_timeout--)
++			needs_aneg = true;
++		break;
+ 	case PHY_NOLINK:
++		if (phy_interrupt_is_valid(phydev))
++			break;
++       phy_read_status(phydev);
++		//err = phy_read_status(phydev);
++		//if (err)
++		//	break;
++
++		if (phydev->link) {
++			if (AUTONEG_ENABLE == phydev->autoneg) {
++				err = phy_aneg_done(phydev);
++				if (err < 0)
++					break;
++
++				if (!err) {
++					phydev->state = PHY_AN;
++					phydev->link_timeout = PHY_AN_TIMEOUT;
++					break;
++				}
++			}
++			phydev->state = PHY_RUNNING;
++			phy_link_up(phydev);
++		}
++
++		// err = phy_check_link_status(phydev);
++		break;
+ 	case PHY_RUNNING:
+-		err = phy_check_link_status(phydev);
++		/* Only register a CHANGE if we are polling and link changed
++		 * since latest checking.
++		 */
++		if (phydev->irq == PHY_POLL) {
++			old_link = phydev->link;
++			err = phy_read_status(phydev);
++			if (err)
++				break;
++
++			if (old_link != phydev->link)
++				phydev->state = PHY_CHANGELINK;
++		}
++		/*
++		 * Failsafe: check that nobody set phydev->link=0 between two
++		 * poll cycles, otherwise we won't leave RUNNING state as long
++		 * as link remains down.
++		 */
++		if (!phydev->link && phydev->state == PHY_RUNNING) {
++			phydev->state = PHY_CHANGELINK;
++			phydev_err(phydev, "no link in PHY_RUNNING\n");
++		}
+ 		break;
+ 	case PHY_HALTED:
+ 		if (phydev->link) {
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -187,6 +187,7 @@ static inline const char *phy_modes(phy_interface_t interface)
+ 
+ #define PHY_INIT_TIMEOUT	100000
+ #define PHY_FORCE_TIMEOUT	10
++#define PHY_AN_TIMEOUT		10
+ 
+ #define PHY_MAX_ADDR	32
+ 
+@@ -315,6 +316,8 @@ enum phy_state {
+ 	PHY_UP,
+ 	PHY_RUNNING,
+ 	PHY_NOLINK,
++	PHY_AN,
++	PHY_CHANGELINK,
+ };
+ 
+ /**
+@@ -414,6 +417,7 @@ struct phy_device {
+ 
+ 	/* Energy efficient ethernet modes which should be prohibited */
+ 	u32 eee_broken_modes;
++	int link_timeout;
+ 
+ #ifdef CONFIG_LED_TRIGGER_PHY
+ 	struct phy_led_trigger *phy_led_triggers;
+-- 
+2.17.1
+

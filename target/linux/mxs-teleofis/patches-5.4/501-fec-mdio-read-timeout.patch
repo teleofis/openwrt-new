@@ -1,0 +1,10 @@
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -1870,6 +1870,7 @@
+ 			usecs_to_jiffies(FEC_MII_TIMEOUT));
+ 	if (time_left == 0) {
+ 		netdev_err(fep->netdev, "MDIO read timeout\n");
++		fec_restart(fep->netdev);
+ 		ret = -ETIMEDOUT;
+ 		goto out;
+ 	}

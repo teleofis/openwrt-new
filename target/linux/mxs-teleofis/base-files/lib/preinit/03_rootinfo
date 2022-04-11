@@ -1,0 +1,9 @@
+#!/bin/sh
+
+do_rootinfo_generic() {
+	mkdir -p /tmp/sysinfo
+	[ -e /tmp/sysinfo/rootfs ] || \
+		echo "$(grep -o "ubi0[^[:space:]]*" /proc/cmdline)" > /tmp/sysinfo/rootfs
+}
+
+boot_hook_add preinit_main do_rootinfo_generic
