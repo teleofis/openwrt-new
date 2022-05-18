@@ -45,8 +45,12 @@ define Device/teleofis_rtux68v2
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd bc \
-  ntpd ntp-utils uboot-envtools block-mount coreutils-sleep tcpdump \
-  wpad hostapd
+  ntpd ntp-utils uboot-envtools block-mount coreutils coreutils-sleep tcpdump \
+  collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
+  collectd-mod-uptime collectd-mod-processes collectd-mod-network \
+  collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
+  collectd-mod-thermal collectd-mod-exec \
+  lsof wpad hostapd python3 python3-pip
   IMAGES := nand.ubi sysupgrade.tar 
   IMAGE_NAME = $$(IMAGE_PREFIX)-$$(1).$$(2)
   IMAGE/nand.ubi := append-ubi
