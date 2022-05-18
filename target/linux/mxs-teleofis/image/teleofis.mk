@@ -24,8 +24,7 @@ define Device/teleofis_rtux68v2
   DEVICE_MODEL := RTUx68v2
   SUPPORTED_DEVICES := teleofis,rtux68v2
   DEVICE_DTS:= imx28_teleofis_rtux68v2
-  DEVICE_PACKAGES := kmod-rtc-pcf8563 kmod-rtc-ds1307 \
-  kmod-pps kmod-pps-ldisc kmod-pps-gpio \
+  DEVICE_PACKAGES := kmod-pps kmod-pps-ldisc kmod-pps-gpio \
   kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
   kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
   kmod-input-gpio-keys kmod-rtl8192cu \
