@@ -15,7 +15,7 @@ proto_3g_init_config() {
 	ppp_generic_init_config
 	proto_config_add_string "device:device"
 	proto_config_add_string "apn"
-	proto_config_add_string "service"
+	proto_config_add_string "modes"
 	proto_config_add_string "pincode"
 	proto_config_add_string "delay"
 	proto_config_add_string "dialnumber"
@@ -27,7 +27,7 @@ proto_3g_setup() {
 
 	json_get_var device device
 	json_get_var apn apn
-	json_get_var service service
+	json_get_var modes modes
 	json_get_var pincode pincode
 	json_get_var dialnumber dialnumber
 	json_get_var delay delay
@@ -42,33 +42,61 @@ proto_3g_setup() {
 
 	[ -n "$delay" ] && sleep "$delay"
 
-	case "$service" in
+	case "$modes" in
 		cdma|evdo)
 			chat="/etc/chatscripts/evdo.chat"
 		;;
 		*)
 			chat="/etc/chatscripts/3g.chat"
 			cardinfo=$(gcom -d "$device" -s /etc/gcom/getcardinfo.gcom)
+			counter=0
+			while [[ -z "$cardinfo" ]];
+			do
+				sleep 1
+				cardinfo=$(gcom -d "$device" -s /etc/gcom/getcardinfo.gcom)
+				counter=$((counter+1))
+				if [[ "$counter" -ge "10" ]]; then
+					break
+				fi
+			done
 			if echo "$cardinfo" | grep -q Novatel; then
-				case "$service" in
-					umts_only) CODE=2;;
-					gprs_only) CODE=1;;
+				case "$modes" in
+					umts) CODE=2;;
+					gsm) CODE=1;;
 					*) CODE=0;;
 				esac
 				export MODE="AT\$NWRAT=${CODE},2"
+
+			elif echo "$cardinfo" | grep -q SIM; then
+				case "$modes" in
+					umts) CODE=14;;
+					gsm) CODE=13;;
+					*) CODE=2;;
+				esac
+				export MODE="AT+CNMP=${CODE}"
+				chat="/etc/chatscripts/3g_sim5300.chat"
+			elif echo "$cardinfo" | grep -q Cinterion; then
+				case "$modes" in
+					umts) CODE="^SXRAT=2";;
+					gsm) CODE="^SXRAT=0";;
+					all|lte) CODE="^SXRAT=1,2";;
+					*) CODE="";;
+				esac
+				export MODE="AT${CODE}"
+				chat="/etc/chatscripts/3g_ehs5.chat"
 			elif echo "$cardinfo" | grep -q Option; then
-				case "$service" in
-					umts_only) CODE=1;;
-					gprs_only) CODE=0;;
+				case "$modes" in
+					umts) CODE=1;;
+					gsm) CODE=0;;
 					*) CODE=3;;
 				esac
 				export MODE="AT_OPSYS=${CODE}"
 			elif echo "$cardinfo" | grep -q "Sierra Wireless"; then
 				SIERRA=1
 			elif echo "$cardinfo" | grep -qi huawei; then
-				case "$service" in
-					umts_only) CODE="14,2";;
-					gprs_only) CODE="13,1";;
+				case "$modes" in
+					umts) CODE="14,2";;
+					gsm) CODE="13,1";;
 					*) CODE="2,2";;
 				esac
 				export MODE="AT^SYSCFG=${CODE},3FFFFFFF,2,4"
