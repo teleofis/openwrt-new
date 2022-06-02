@@ -25,7 +25,7 @@ define Device/teleofis_rtux68v2
   SUPPORTED_DEVICES := teleofis,rtux68v2
   DEVICE_DTS:= imx28_teleofis_rtux68v2
   DEVICE_PACKAGES := kmod-pps kmod-pps-ldisc kmod-pps-gpio \
-  kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
+  kmod-usb-gadget-eth kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
   kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
   kmod-input-gpio-keys kmod-rtl8192cu \
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
@@ -45,7 +45,8 @@ define Device/teleofis_rtux68v2
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd bc \
-  ntpd ntp-utils uboot-envtools block-mount coreutils coreutils-sleep tcpdump \
+  ntpd ntp-utils uboot-envtools block-mount tcpdump \
+  coreutils coreutils-sleep coreutils-stty \
   collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
