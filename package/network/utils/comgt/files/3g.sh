@@ -19,6 +19,9 @@ proto_3g_init_config() {
 	proto_config_add_string "pincode"
 	proto_config_add_string "delay"
 	proto_config_add_string "dialnumber"
+	proto_config_add_string "auth"
+	proto_config_add_string "username"
+	proto_config_add_string "password"
 }
 
 proto_3g_setup() {
@@ -31,6 +34,10 @@ proto_3g_setup() {
 	json_get_var pincode pincode
 	json_get_var dialnumber dialnumber
 	json_get_var delay delay
+	json_get_var auth auth
+	json_get_var username username
+	json_get_var password password
+
 
 	[ -n "$dat_device" ] && device=$dat_device
 
@@ -41,6 +48,13 @@ proto_3g_setup() {
 	}
 
 	[ -n "$delay" ] && sleep "$delay"
+
+	case "$auth" in
+		none) auth_n=0;;
+		pap) auth_n=1;;
+		chap) auth_n=2;;
+		*) auth_n=1;;
+	esac
 
 	case "$modes" in
 		cdma|evdo)
@@ -123,7 +137,7 @@ proto_3g_setup() {
 		;;
 	esac
 
-	connect="${apn:+USE_APN=$apn }DIALNUMBER=$dialnumber /usr/sbin/chat -t5 -v -E -f $chat"
+	connect="${apn:+USE_APN=$apn }${username:+USER=$username }${password:+PASS=$password }${auth_n:+AUTH=$auth_n }DIALNUMBER=$dialnumber /usr/sbin/chat -t5 -v -E -f $chat"
 	ppp_generic_setup "$interface" \
 		noaccomp \
 		nopcomp \
