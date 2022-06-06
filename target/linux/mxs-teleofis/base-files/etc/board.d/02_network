@@ -9,7 +9,7 @@ board=$(board_name)
 
 case "$board" in
 *)
-	ucidef_set_interface_lan 'eth0 eth1'
+	ucidef_set_interface_lan 'eth0 eth1 usb0'
 	MAC0=$(fw_printenv -n ethaddr  | sed -e s/://g)
 	MAC1=$(fw_printenv -n eth1addr | sed -e s/://g)
 	if [ "$MAC0" = "001122334455" -o "$MAC1" = "001122334466" -o "$MAC0" = "$MAC1" ]; then
