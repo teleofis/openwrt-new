@@ -278,11 +278,11 @@
 			default-state = "off";
 		};
 	};
-	vccfault {
+	keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&gpio_pins_3V3>;
-		vcc_fault {
+		vccfault {
 			label = "vccfault";
 			gpios = <&gpio3 29 GPIO_ACTIVE_HIGH>;
 			linux,code = <0x100>;

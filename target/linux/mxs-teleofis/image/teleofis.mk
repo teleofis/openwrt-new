@@ -27,11 +27,13 @@ define Device/teleofis_rtux68v2
   DEVICE_PACKAGES := kmod-pps kmod-pps-ldisc kmod-pps-gpio \
   kmod-usb-gadget-eth kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
   kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
-  kmod-input-gpio-keys kmod-rtl8192cu \
+  kmod-input-gpio-keys kmod-button-hotplug kmod-rtl8192cu \
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
-  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi luci-proto-gre luci-proto-ip luci-i18n-base-en \
-  luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru luci-i18n-firewall-ru luci-i18n-opkg-ru \
+  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi \
+  luci-proto-nbiot luci-proto-gre luci-proto-ip \
+  luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
+  luci-i18n-firewall-ru luci-i18n-opkg-ru \
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingconrtol-en luci-i18n-pingconrtol-ru \
   pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
@@ -46,7 +48,7 @@ define Device/teleofis_rtux68v2
   iolines luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd bc \
   ntpd ntp-utils uboot-envtools block-mount tcpdump \
-  coreutils coreutils-sleep coreutils-stty \
+  mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
   collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
