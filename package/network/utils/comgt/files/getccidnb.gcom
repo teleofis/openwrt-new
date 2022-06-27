@@ -6,8 +6,9 @@ opengt
  flash 0.1
 
 :start
- send "ATI^m"
- get 1 "" $s
+ send "AT+CCID^m"
+ waitfor 1 "89"
+ get 1 "^m" $s
  print $s
 
 :continue

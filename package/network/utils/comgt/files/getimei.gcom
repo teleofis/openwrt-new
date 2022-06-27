@@ -6,8 +6,11 @@ opengt
  flash 0.1
 
 :start
- send "ATI^m"
- get 1 "" $s
+ send "ATE1^m"
+ waitfor 1 "OK" 
+ send "AT+CGSN^m"
+ waitfor 1 "CGSN"
+ get 1 "^m" $s
  print $s
 
 :continue
