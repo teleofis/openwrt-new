@@ -1,7 +1,7 @@
 /dts-v1/;
 #include "imx28.dtsi"
 / {
-	model = "TELEOFIS RTUx68v2";
+	model = "TELEOFIS RTUx68";
 	compatible = "teleofis,rtux68v2","fsl,imx28";
 	memory {
 		reg = <0x40000000 0x08000000>;
