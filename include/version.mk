@@ -19,6 +19,7 @@ PKG_CONFIG_DEPENDS += \
 	CONFIG_VERSION_PRODUCT \
 	CONFIG_VERSION_SUPPORT_URL \
 	CONFIG_VERSION_HWREV \
+	CONFIG_VERSION_VENDOR \
 
 sanitize = $(call tolower,$(subst _,-,$(subst $(space),-,$(1))))
 
@@ -55,6 +56,9 @@ VERSION_PRODUCT:=$(if $(VERSION_PRODUCT),$(VERSION_PRODUCT),Generic)
 
 VERSION_HWREV:=$(call qstrip,$(CONFIG_VERSION_HWREV))
 VERSION_HWREV:=$(if $(VERSION_HWREV),$(VERSION_HWREV),v0)
+
+VERSION_VENDOR:=$(call qstrip,$(CONFIG_VERSION_VENDOR))
+VERSION_VENDOR:=$(if $(VERSION_VENDOR),$(VERSION_VENDOR),3.0.3S)
 
 define taint2sym
 $(CONFIG_$(firstword $(subst :, ,$(subst +,,$(subst -,,$(1))))))
@@ -104,5 +108,6 @@ VERSION_SED_SCRIPT:=$(SED) 's,%U,$(call sed_escape,$(VERSION_REPO)),g' \
 	-e 's,%u,$(call sed_escape,$(VERSION_HOME_URL)),g' \
 	-e 's,%s,$(call sed_escape,$(VERSION_SUPPORT_URL)),g' \
 	-e 's,%P,$(call sed_escape,$(VERSION_PRODUCT)),g' \
-	-e 's,%h,$(call sed_escape,$(VERSION_HWREV)),g'
+	-e 's,%h,$(call sed_escape,$(VERSION_HWREV)),g' \
+	-e 's,%G,$(call sed_escape,$(VERSION_VENDOR)),g'
 
