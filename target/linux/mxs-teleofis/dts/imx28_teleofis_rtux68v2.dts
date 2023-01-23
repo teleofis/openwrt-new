@@ -19,7 +19,46 @@
 			pinctrl@80018000 
 			{
 				pinctrl-names = "default";
-				pinctrl-0 = <&gpio_pins_3V3>;
+				pinctrl-0 = <&hog_pins_a>;
+
+				hog_pins_a: hog@0 {
+					reg = <0>;
+					fsl,pinmux-ids = <
+						MX28_PAD_SSP2_MISO__GPIO_2_18			/* GSM.SIMA */
+						MX28_PAD_AUART2_RX__GPIO_3_8			/* SIMDET.1# */
+						MX28_PAD_SSP1_DATA3__GPIO_2_15			/* SIMDET.0# */
+						MX28_PAD_AUART2_TX__GPIO_3_9			/* GSM.PWRKEY */
+						MX28_PAD_SSP2_SS0__GPIO_2_19			/* GSM.VCCEN# */
+						
+						MX28_PAD_I2C0_SDA__GPIO_3_25			/* USBHOST.VCCEN.TRIG.ST C*/
+						MX28_PAD_SAIF1_SDATA0__GPIO_3_26		/* USBHOST.VCCEN.TRIG.CLK D*/
+						MX28_PAD_PWM3__GPIO_3_28				/* USBHOST.MODE.SWITCHER */
+
+						MX28_PAD_ENET0_TX_CLK__GPIO_4_5			/* GPIO on XW2 */
+						MX28_PAD_ENET0_RX_CLK__GPIO_4_13		/* GPIO on XW2 */
+
+						MX28_PAD_LCD_D19__GPIO_1_19				/* 0 PULLUP */
+						MX28_PAD_LCD_D18__GPIO_1_18				/* 0 PULLDOWN */
+						MX28_PAD_LCD_D22__GPIO_1_22				/* 1 PULLUP */
+						MX28_PAD_LCD_D21__GPIO_1_21				/* 1 PULLDOWN */
+						MX28_PAD_LCD_WR_RWN__GPIO_1_25			/* 2 PULLUP */
+						MX28_PAD_SSP0_DATA0__GPIO_2_0			/* 2 PULLDOWN */
+						MX28_PAD_SSP0_DATA2__GPIO_2_2			/* 3 PULLUP */
+						MX28_PAD_SSP0_DATA1__GPIO_2_1			/* 3 PULLDOWN */
+					>;
+					fsl,drive-strength = <MXS_DRIVE_4mA>;
+					fsl,voltage = <MXS_VOLTAGE_HIGH>;
+					fsl,pull-up = <MXS_PULL_DISABLE>;
+				};
+				vcc_fault_key: vccfaultkey {
+					reg = <0>;
+					fsl,pinmux-ids = <
+						MX28_PAD_PWM4__GPIO_3_29				/* VCC.FAULT*/
+					>;
+					fsl,drive-strength = <MXS_DRIVE_4mA>;
+					fsl,voltage = <MXS_VOLTAGE_HIGH>;
+					fsl,pull-up = <MXS_PULL_DISABLE>;
+				};
 				auart4_pins: auart4-pins@0 {					/* RS232 */
 					reg = <0>;
 					fsl,pinmux-ids = <
@@ -46,36 +85,6 @@
 					reg = <0>;
 					fsl,pinmux-ids = <
 						MX28_PAD_LCD_D13__GPIO_1_13				/* WDGRES*/
-					>;
-					fsl,drive-strength = <MXS_DRIVE_4mA>;
-					fsl,voltage = <MXS_VOLTAGE_HIGH>;
-					fsl,pull-up = <MXS_PULL_DISABLE>;
-				};
-				gpio_pins_3V3: gpio-pins-3V3@0 {
-					reg = <0>;
-					fsl,pinmux-ids = <
-						MX28_PAD_SSP2_MISO__GPIO_2_18			/* GSM.SIMA */
-						MX28_PAD_AUART2_RX__GPIO_3_8			/* SIMDET.1# */
-						MX28_PAD_SSP1_DATA3__GPIO_2_15			/* SIMDET.0# */
-						MX28_PAD_AUART2_TX__GPIO_3_9			/* GSM.PWRKEY */
-						MX28_PAD_SSP2_SS0__GPIO_2_19			/* GSM.VCCEN# */
-						
-						MX28_PAD_I2C0_SDA__GPIO_3_25			/* USBHOST.VCCEN.TRIG.ST C*/
-						MX28_PAD_SAIF1_SDATA0__GPIO_3_26		/* USBHOST.VCCEN.TRIG.CLK D*/
-						MX28_PAD_PWM3__GPIO_3_28				/* USBHOST.MODE.SWITCHER */
-
-						MX28_PAD_PWM4__GPIO_3_29				/* VCC.FAULT*/
-						MX28_PAD_ENET0_TX_CLK__GPIO_4_5			/* GPIO on XW2 */
-						MX28_PAD_ENET0_RX_CLK__GPIO_4_13		/* GPIO on XW2 */
-
-						MX28_PAD_LCD_D19__GPIO_1_19				/* 0 PULLUP */
-						MX28_PAD_LCD_D18__GPIO_1_18				/* 0 PULLDOWN */
-						MX28_PAD_LCD_D22__GPIO_1_22				/* 1 PULLUP */
-						MX28_PAD_LCD_D21__GPIO_1_21				/* 1 PULLDOWN */
-						MX28_PAD_LCD_WR_RWN__GPIO_1_25			/* 2 PULLUP */
-						MX28_PAD_SSP0_DATA0__GPIO_2_0			/* 2 PULLDOWN */
-						MX28_PAD_SSP0_DATA2__GPIO_2_2			/* 3 PULLUP */
-						MX28_PAD_SSP0_DATA1__GPIO_2_1			/* 3 PULLDOWN */
 					>;
 					fsl,drive-strength = <MXS_DRIVE_4mA>;
 					fsl,voltage = <MXS_VOLTAGE_HIGH>;
@@ -299,7 +308,7 @@
 	keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
-		pinctrl-0 = <&gpio_pins_3V3>;
+		pinctrl-0 = <&vcc_fault_key>;
 		vccfault {
 			label = "vccfault";
 			gpios = <&gpio3 29 GPIO_ACTIVE_HIGH>;
