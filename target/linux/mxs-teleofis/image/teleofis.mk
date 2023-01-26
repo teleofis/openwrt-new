@@ -56,7 +56,7 @@ define Device/teleofis_rtux68v2
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
   lsof wpad hostapd snmpd socat python3 python3-pip iconv \
-  pps-tools i2c-tools usbutils
+  pps-tools i2c-tools usbutils pptpd
   IMAGES := nand.ubi sysupgrade.tar 
   IMAGE_NAME = $$(IMAGE_PREFIX)-$$(1).$$(2)
   IMAGE/nand.ubi := append-ubi
