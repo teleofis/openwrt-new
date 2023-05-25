@@ -2,6 +2,18 @@ UBIFS_OPTS = -m 2048 -e 124KiB -c 2000
 DEVICE_VARS += DTS UBIFS_OPTS
 KERNEL_LOADADDR := 0x40008000
 
+# TODO: replace with the proper way
+define Build/append-dtb-n
+  $(foreach dts,$(DEVICE_DTS), \
+    dd \
+      if=$(KDIR)/image-$(firstword $(dts)).dtb \
+      of=$(KDIR)/image-$(firstword $(dts)).dtb.new bs=64k conv=sync ; \
+    mv \
+      $(KDIR)/image-$(firstword $(dts)).dtb.new \
+      $(KDIR)/image-$(firstword $(dts)).dtb ; \
+    cat $(KDIR)/image-$(firstword $(dts)).dtb >> $@)
+endef
+
 define Device/Default
   KERNEL_NAME := zImage
   KERNEL_SUFFIX := -uImage
@@ -16,14 +28,15 @@ define Device/Default
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS := imx28-$(subst _,-,$(1))
   KERNEL_SIZE := 5120k
-  KERNEL := kernel-bin | uImage none | pad-to 4096k | append-dtb 
+  KERNEL := kernel-bin | uImage none | pad-to 4096k | check-size 4096k | \
+    append-dtb-n | check-size 5120k
 endef
 
 define Device/teleofis_rtux68v2
   DEVICE_VENDOR := Teleofis
   DEVICE_MODEL := RTUx68v2
   SUPPORTED_DEVICES := teleofis,rtux68v2
-  DEVICE_DTS:= imx28_teleofis_rtux68v2
+  DEVICE_DTS := imx28_teleofis_rtux68v2 imx28_teleofis_rtux68v2_rts
   DEVICE_PACKAGES := kmod-pps kmod-pps-ldisc kmod-pps-gpio \
   kmod-usb-gadget-eth kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
   kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
@@ -55,8 +68,8 @@ define Device/teleofis_rtux68v2
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
-  lsof wpad hostapd snmpd socat python3 python3-pip iconv \
-  pps-tools i2c-tools usbutils pptpd
+  lsof wpad hostapd snmpd socat python3 python3-pip python3-pyserial iconv \
+  pps-tools i2c-tools usbutils pptpd ppp-mod-pptp ntfs-3g
   IMAGES := nand.ubi sysupgrade.tar 
   IMAGE_NAME = $$(IMAGE_PREFIX)-$$(1).$$(2)
   IMAGE/nand.ubi := append-ubi
