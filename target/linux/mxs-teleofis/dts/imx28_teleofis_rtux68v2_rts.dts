@@ -206,17 +206,13 @@
 			auart1: serial@8006c000 {
 				pinctrl-names = "default";
 				pinctrl-0 = <&auart1_2pins_a &auart1_rts_pin>;
-				rts-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
-				linux,rs485-enabled-at-boot-time;
-				rs485-rts-delay = <3 3>;
+				fsl,rede-gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
 			auart2: serial@8006e000 {
 				pinctrl-names = "default";
 				pinctrl-0 = <&auart2_2pins_a &auart2_rts_pin>;			/* RS485 */
-				rts-gpios = <&gpio4 13 GPIO_ACTIVE_HIGH>;
-				linux,rs485-enabled-at-boot-time;
-				rs485-rts-delay = <3 3>;
+				fsl,rede-gpio = <&gpio4 13 GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
 			auart4: serial@80072000 {

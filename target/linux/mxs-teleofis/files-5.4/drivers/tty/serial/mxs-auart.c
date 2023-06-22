@@ -44,6 +44,9 @@
 #include <linux/err.h>
 #include <linux/irq.h>
 #include "serial_mctrl_gpio.h"
+#include <linux/gpio.h>
+#include <linux/of_gpio.h>
+#include <dt-bindings/gpio/gpio.h>
 
 #define MXS_AUART_PORTS 5
 #define MXS_AUART_FIFO_SIZE		16
@@ -424,6 +427,7 @@ struct mxs_auart_port {
 #define MXS_AUART_DMA_TX_SYNC	2  /* bit 2 */
 #define MXS_AUART_DMA_RX_READY	3  /* bit 3 */
 #define MXS_AUART_RTSCTS	4  /* bit 4 */
+#define MXS_AUART_REDE_GPIO 	5  /* bit 5 */
 	unsigned long flags;
 	unsigned int mctrl_prev;
 	enum mxs_auart_type devtype;
@@ -445,6 +449,8 @@ struct mxs_auart_port {
 	struct mctrl_gpios	*gpios;
 	int			gpio_irq[UART_GPIO_MAX];
 	bool			ms_irq_enabled;
+	int rede_gpio;
+	bool rede_gpio_inverted;
 };
 
 static const struct platform_device_id mxs_auart_devtype[] = {
@@ -523,6 +529,8 @@ static void mxs_clr(unsigned int val, struct mxs_auart_port *uap,
 }
 
 static void mxs_auart_stop_tx(struct uart_port *u);
+static void mxs_rs485_stop_tx(struct uart_port *u);
+static void mxs_rs485_start_tx(struct uart_port *u);
 
 #define to_auart_port(u) container_of(u, struct mxs_auart_port, port)
 
@@ -583,6 +591,7 @@ static int mxs_auart_dma_tx(struct mxs_auart_port *s, int size)
 static void mxs_auart_tx_chars(struct mxs_auart_port *s)
 {
 	struct circ_buf *xmit = &s->port.state->xmit;
+	struct serial_rs485 *rs485 = &s->port.rs485;
 
 	if (auart_dma_enabled(s)) {
 		u32 i = 0;
@@ -617,6 +626,11 @@ static void mxs_auart_tx_chars(struct mxs_auart_port *s)
 		return;
 	}
 
+	if ((test_bit(MXS_AUART_REDE_GPIO, &s->flags)) &&
+		(!(readl(s->port.membase + AUART_STAT) & AUART_STAT_TXFF)) &&
+		((s->port.x_char) || (!uart_circ_empty(xmit) &&
+		!uart_tx_stopped(&s->port))))
+			mxs_rs485_start_tx(&s->port);
 
 	while (!(mxs_read(s, REG_STAT) & AUART_STAT_TXFF)) {
 		if (s->port.x_char) {
@@ -642,6 +656,10 @@ static void mxs_auart_tx_chars(struct mxs_auart_port *s)
 
 	if (uart_tx_stopped(&s->port))
 		mxs_auart_stop_tx(&s->port);
+	if(test_bit(MXS_AUART_REDE_GPIO, &s->flags)) {
+		while ((readl(s->port.membase + AUART_STAT) & AUART_STAT_BUSY));
+		mxs_rs485_stop_tx(&s->port);
+	}
 }
 
 static void mxs_auart_rx_char(struct mxs_auart_port *s)
@@ -1050,7 +1068,7 @@ static void mxs_auart_settermios(struct uart_port *u,
 
 	/* figure out the hardware flow control settings */
 	ctrl2 &= ~(AUART_CTRL2_CTSEN | AUART_CTRL2_RTSEN);
-	if (cflag & CRTSCTS) {
+	if ((cflag & CRTSCTS) && ~(test_bit(MXS_AUART_REDE_GPIO, &s->flags))) {
 		/*
 		 * The DMA has a bug(see errata:2836) in mx23.
 		 * So we can not implement the DMA for auart in mx23,
@@ -1280,6 +1298,21 @@ static unsigned int mxs_auart_tx_empty(struct uart_port *u)
 	return 0;
 }
 
+static void mxs_rs485_start_tx(struct uart_port *u)
+{
+	struct mxs_auart_port *s = to_auart_port(u);
+	int ret;
+
+	if (u->rs485.flags & SER_RS485_ENABLED) {
+		ret = (u->rs485.flags & SER_RS485_RTS_ON_SEND) ? 1 : 0;
+		if (gpio_get_value(s->rede_gpio) != ret) {
+			gpio_direction_output(s->rede_gpio, ret);
+			if (u->rs485.delay_rts_before_send > 0)
+				mdelay(u->rs485.delay_rts_before_send);
+		}
+	}
+}
+
 static void mxs_auart_start_tx(struct uart_port *u)
 {
 	struct mxs_auart_port *s = to_auart_port(u);
@@ -1290,10 +1323,24 @@ static void mxs_auart_start_tx(struct uart_port *u)
 	mxs_auart_tx_chars(s);
 }
 
+static void mxs_rs485_stop_tx(struct uart_port *u)
+{
+	struct mxs_auart_port *s = to_auart_port(u);
+	int ret;
+
+	if (u->rs485.flags & SER_RS485_ENABLED) {
+		ret = u->rs485.flags & SER_RS485_RTS_AFTER_SEND ? 1 : 0;
+		if (gpio_get_value(s->rede_gpio) != ret) {
+			if(u->rs485.delay_rts_after_send > 0)
+				mdelay(u->rs485.delay_rts_after_send);
+			gpio_direction_output(s->rede_gpio, ret);
+		}
+	}
+}
+
 static void mxs_auart_stop_tx(struct uart_port *u)
 {
 	struct mxs_auart_port *s = to_auart_port(u);
-
 	mxs_clr(AUART_CTRL2_TXE, s, REG_CTRL2);
 }
 
@@ -1312,6 +1359,49 @@ static void mxs_auart_break_ctl(struct uart_port *u, int ctl)
 		mxs_set(AUART_LINECTRL_BRK, s, REG_LINECTRL);
 	else
 		mxs_clr(AUART_LINECTRL_BRK, s, REG_LINECTRL);
+}
+
+static int mxs_auart_rs485_config(struct uart_port *u,
+				 struct serial_rs485 *rs485)
+{
+	struct mxs_auart_port *s = to_auart_port(u);
+	int val;
+	bool rts_during_rx, rts_during_tx;
+
+	if (rs485->flags & SER_RS485_ENABLED) {
+		rs485->delay_rts_before_send = min(rs485->delay_rts_before_send, 100U);
+		rs485->delay_rts_after_send  = min(rs485->delay_rts_after_send, 100U);
+
+		rts_during_rx = rs485->flags & SER_RS485_RTS_AFTER_SEND;
+		rts_during_tx = rs485->flags & SER_RS485_RTS_ON_SEND;
+		if (rts_during_rx == rts_during_tx) {
+			dev_err(u->dev,
+				"unsupported RTS signalling on_send:%d after_send:%d - setting to default\n",
+				rts_during_tx, rts_during_rx);
+			if (s->rede_gpio_inverted) {
+				rs485->flags &= ~SER_RS485_RTS_ON_SEND;
+				rs485->flags |= SER_RS485_RTS_AFTER_SEND;
+			} else {
+				rs485->flags |= SER_RS485_RTS_ON_SEND;
+				rs485->flags &= ~SER_RS485_RTS_AFTER_SEND;
+			}
+		}
+
+		/* RTS is required to control the transmitter */
+		if (gpio_is_valid(s->rede_gpio)) {
+			/* enable / disable rts */
+			val = (rs485->flags & SER_RS485_ENABLED) ?
+				SER_RS485_RTS_AFTER_SEND : SER_RS485_RTS_ON_SEND;
+			val = (rs485->flags & val) ? 1 : 0;
+			gpio_set_value(s->rede_gpio, val);
+		} else {
+			dev_err(u->dev,"RE/DE gpio%d not valid\n",s->rede_gpio);
+			rs485->flags &= ~SER_RS485_ENABLED;
+		}
+	}
+	u->rs485 = *rs485;
+
+	return 0;
 }
 
 static const struct uart_ops mxs_auart_ops = {
@@ -1555,6 +1645,7 @@ static int serial_mxs_probe_dt(struct mxs_auart_port *s,
 		struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
+	struct serial_rs485 *rs485 = &s->port.rs485;
 	int ret;
 
 	if (!np)
@@ -1571,6 +1662,30 @@ static int serial_mxs_probe_dt(struct mxs_auart_port *s,
 	if (of_get_property(np, "uart-has-rtscts", NULL) ||
 	    of_get_property(np, "fsl,uart-has-rtscts", NULL) /* deprecated */)
 		set_bit(MXS_AUART_RTSCTS, &s->flags);
+
+	uart_get_rs485_mode(s->dev, rs485);
+
+	if (of_get_property(np, "fsl,rede-gpio", NULL)){
+		set_bit(MXS_AUART_REDE_GPIO, &s->flags);
+		s->rede_gpio = of_get_named_gpio(np, "fsl,rede-gpio", 0);
+		if (gpio_is_valid(s->rede_gpio)) {
+			if (of_property_read_bool(np, "rs485-rts-active-low")) {
+				s->rede_gpio_inverted = 1;
+				rs485->flags &= ~SER_RS485_RTS_ON_SEND;
+				rs485->flags |= SER_RS485_RTS_AFTER_SEND;
+			} else {
+				s->rede_gpio_inverted = 0;
+				rs485->flags |= SER_RS485_RTS_ON_SEND;
+				rs485->flags &= ~SER_RS485_RTS_AFTER_SEND;
+			}
+			ret = rs485->flags & SER_RS485_RTS_AFTER_SEND ? 1 : 0;
+			ret = gpio_direction_output(s->rede_gpio, ret);
+			if (ret < 0)
+				return ret;
+		} else {
+			s->rede_gpio = -EINVAL;
+		}
+	}
 
 	return 0;
 }
@@ -1693,6 +1808,7 @@ static int mxs_auart_probe(struct platform_device *pdev)
 	s->port.fifosize = MXS_AUART_FIFO_SIZE;
 	s->port.uartclk = clk_get_rate(s->clk);
 	s->port.type = PORT_IMX;
+	s->port.rs485_config = mxs_auart_rs485_config;
 
 	mxs_init_regs(s);
 
