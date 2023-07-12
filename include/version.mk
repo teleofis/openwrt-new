@@ -58,7 +58,7 @@ VERSION_HWREV:=$(call qstrip,$(CONFIG_VERSION_HWREV))
 VERSION_HWREV:=$(if $(VERSION_HWREV),$(VERSION_HWREV),v0)
 
 VERSION_VENDOR:=$(call qstrip,$(CONFIG_VERSION_VENDOR))
-VERSION_VENDOR:=$(if $(VERSION_VENDOR),$(VERSION_VENDOR),3.0.7S)
+VERSION_VENDOR:=$(if $(VERSION_VENDOR),$(VERSION_VENDOR),3.0.8S)
 
 define taint2sym
 $(CONFIG_$(firstword $(subst :, ,$(subst +,,$(subst -,,$(1))))))
