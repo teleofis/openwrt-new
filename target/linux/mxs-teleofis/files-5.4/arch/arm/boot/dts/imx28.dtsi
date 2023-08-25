@@ -58,32 +58,32 @@
 
 		opp@64000000 {
 			opp-hz = /bits/ 64 <64000000>;
-			opp-microvolt = <1200000>;
+			opp-microvolt = <1350000>;
 			clock-latency-ns = <61036>;
 			opp-suspend;
 		};
 
 		opp@261819000 {
 			opp-hz = /bits/ 64 <261819000>;
-			opp-microvolt = <1300000>;
+			opp-microvolt = <1350000>;
 			clock-latency-ns = <61036>;
 		};
 
 		opp@360000000 {
 			opp-hz = /bits/ 64 <360000000>;
-			opp-microvolt = <1300000>;
+			opp-microvolt = <1350000>;
 			clock-latency-ns = <61036>;
 		};
 
 		opp@392728000 {
 			opp-hz = /bits/ 64 <392728000>;
-			opp-microvolt = <1400000>;
+			opp-microvolt = <1450000>;
 			clock-latency-ns = <61036>;
 		};
 
 		opp@454737000 {
 			opp-hz = /bits/ 64 <454737000>;
-			opp-microvolt = <1500000>;
+			opp-microvolt = <1550000>;
 			clock-latency-ns = <61036>;
 		};
 	};
