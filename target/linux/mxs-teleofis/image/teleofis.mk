@@ -52,7 +52,7 @@ define Device/teleofis_rtux68v2
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
   pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
-  smstools3 smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
+  smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
   report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
   openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
   luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
