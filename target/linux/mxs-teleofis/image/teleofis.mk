@@ -44,7 +44,7 @@ define Device/teleofis_rtux68v2
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-usb-hid-cp2112 kmod-w1 kmod-w1-master-ds2482 kmod-w1-slave-therm \
-  kmod-ipt-nat-extra \
+  kmod-ipt-nat-extra kmod-tun \
   luci luci-theme-teleofis luci-proto-3g luci-proto-qmi \
   luci-proto-nbiot luci-proto-gre luci-proto-ip \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
