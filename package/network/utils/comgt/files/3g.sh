@@ -116,6 +116,18 @@ proto_3g_setup() {
 				export MODE="AT^SYSCFG=${CODE},3FFFFFFF,2,4"
 			fi
 
+			cardinfo=$(simman2_cli -m -d "$device")
+			if echo "$cardinfo" | grep -qi "SIMCOM A760"; then
+				case "$modes" in
+					lte) CODE=38;;
+					umts) CODE=14;;
+					gsm) CODE=13;;
+					*) CODE=2;;
+				esac
+				export MODE="AT+CNMP=${CODE}"
+				chat="/etc/chatscripts/3g_a7602e.chat"
+			fi
+
 			if [ -n "$pincode" ]; then
 				PINCODE="$pincode" gcom -d "$device" -s /etc/gcom/setpin.gcom || {
 					proto_notify_error "$interface" PIN_FAILED
