@@ -2313,3 +2313,46 @@ define Device/zyxel_wap6805
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += zyxel_wap6805
+
+define Device/teleofis_lt70
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := Teleofis
+  DEVICE_MODEL := LT70
+  DEVICE_PACKAGES := kmod-sdhci-mt7620 \
+  kmod-pps kmod-pps-ldisc kmod-pps-gpio kmod-usb2 kmod-usb3 \
+  kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
+  kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
+  kmod-button-hotplug \
+  kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
+  kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
+  kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
+  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi \
+  luci-proto-nbiot luci-proto-gre luci-proto-ip \
+  luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
+  luci-i18n-firewall-ru luci-i18n-opkg-ru \
+  ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
+  pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
+  pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
+  smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
+  report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
+  openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
+  luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
+  strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
+  mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
+  base-files-common base-files-lt70 \
+  simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
+  iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients xl2tpd bc \
+  ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
+  mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
+  collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
+  collectd-mod-uptime collectd-mod-processes collectd-mod-network \
+  collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
+  collectd-mod-thermal collectd-mod-exec \
+  luci-app-powersupply powersupply event-handler \
+  lsof snmpd socat iconv python3 python3-pip \
+  pps-tools i2c-tools usbutils
+endef
+TARGET_DEVICES += teleofis_lt70

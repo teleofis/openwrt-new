@@ -1,0 +1,27 @@
+--- a/drivers/gpio/Makefile	2023-11-01 12:50:51.229417538 +0600
++++ b/drivers/gpio/Makefile	2023-11-01 12:55:14.593312953 +0600
+@@ -61,6 +61,7 @@
+ obj-$(CONFIG_GPIO_EXAR)			+= gpio-exar.o
+ obj-$(CONFIG_GPIO_F7188X)		+= gpio-f7188x.o
+ obj-$(CONFIG_GPIO_FTGPIO010)		+= gpio-ftgpio010.o
++obj-$(CONFIG_GPIO_GD3X)			+= gpio-gd3x.o
+ obj-$(CONFIG_GPIO_GE_FPGA)		+= gpio-ge.o
+ obj-$(CONFIG_GPIO_GPIO_MM)		+= gpio-gpio-mm.o
+ obj-$(CONFIG_GPIO_GRGPIO)		+= gpio-grgpio.o
+--- a/drivers/gpio/Kconfig	2023-11-01 12:58:41.780861291 +0600
++++ b/drivers/gpio/Kconfig	2023-11-01 12:59:22.122877684 +0600
+@@ -1094,6 +1094,14 @@
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called gpio-tpic2810.
+
++config GPIO_GD3X
++	tristate "GD3X 8-Bit I2C GPO expander"
++	help
++	  Say yes here to enable the GPO driver for the GD3X chip.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called gpio-gd3x.
++
+ config GPIO_TS4900
+ 	tristate "Technologic Systems FPGA I2C GPIO"
+ 	depends on SOC_IMX6 || COMPILE_TEST

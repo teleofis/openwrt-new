@@ -1,0 +1,13 @@
+--- a/drivers/mtd/spi-nor/core.c	2023-03-22 18:30:08.000000000 +0600
++++ b/drivers/mtd/spi-nor/core.c	2023-11-03 17:52:16.015608597 +0600
+@@ -2980,8 +2980,8 @@
+ 		 * reboots (e.g., crashes). Warn the user (or hopefully, system
+ 		 * designer) that this is bad.
+ 		 */
+-		WARN_ONCE(nor->flags & SNOR_F_BROKEN_RESET,
+-			  "enabling reset hack; may not recover from unexpected reboots\n");
++		//WARN_ONCE(nor->flags & SNOR_F_BROKEN_RESET,
++		//	  "enabling reset hack; may not recover from unexpected reboots\n");
+ 		nor->params->set_4byte_addr_mode(nor, true);
+ 	}
+ 

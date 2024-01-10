@@ -1,0 +1,162 @@
+diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
+index b6dc900..a73750d 100644
+--- a/drivers/tty/serial/8250/8250.h
++++ b/drivers/tty/serial/8250/8250.h
+@@ -82,6 +82,7 @@ struct serial8250_config {
+ #define UART_CAP_MINI	(1 << 17)	/* Mini UART on BCM283X family lacks:
+ 					 * STOP PARITY EPAR SPAR WLEN5 WLEN6
+ 					 */
++#define UART_CAP_NOTEMT	(1 << 18)	/* UART without interrupt on TEMT available */
+ 
+ #define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
+ #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
+diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
+index 1f231fc..096a4b2 100644
+--- a/drivers/tty/serial/8250/8250_port.c
++++ b/drivers/tty/serial/8250/8250_port.c
+@@ -82,7 +82,7 @@ static const struct serial8250_config uart_config[] = {
+ 		.tx_loadsz	= 16,
+ 		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
+ 		.rxtrig_bytes	= {1, 4, 8, 14},
+-		.flags		= UART_CAP_FIFO,
++		.flags		= UART_CAP_FIFO | UART_CAP_NOTEMT,
+ 	},
+ 	[PORT_CIRRUS] = {
+ 		.name		= "Cirrus",
+@@ -1469,18 +1469,20 @@ static void start_hrtimer_ms(struct hrtimer *hrt, unsigned long msec)
+ 	hrtimer_start(hrt, t, HRTIMER_MODE_REL);
+ }
+ 
+-static void __stop_tx_rs485(struct uart_8250_port *p)
++static void __stop_tx_rs485(struct uart_8250_port *p, uint32_t stop_delay)
+ {
+ 	struct uart_8250_em485 *em485 = p->em485;
+ 
++	stop_delay = stop_delay / NSEC_PER_USEC + (uint32_t)p->port.rs485.delay_rts_after_send * USEC_PER_MSEC;
+ 	/*
+ 	 * rs485_stop_tx() is going to set RTS according to config
+ 	 * AND flush RX FIFO if required.
+ 	 */
+-	if (p->port.rs485.delay_rts_after_send > 0) {
+-		em485->active_timer = &em485->stop_tx_timer;
+-		start_hrtimer_ms(&em485->stop_tx_timer,
+-				   p->port.rs485.delay_rts_after_send);
++	if (stop_delay > 0) {
++		udelay(stop_delay);
++		p->rs485_stop_tx(p);
++		em485->active_timer = NULL;
++		em485->tx_stopped = true;
+ 	} else {
+ 		p->rs485_stop_tx(p);
+ 		em485->active_timer = NULL;
+@@ -1501,17 +1503,34 @@ static inline void __stop_tx(struct uart_8250_port *p)
+ 	if (em485) {
+ 		unsigned char lsr = serial_in(p, UART_LSR);
+ 		p->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
++		uint32_t stop_delay = 0;
++		if (!(lsr & UART_LSR_THRE)) {
++			return;
++		}
+ 
+ 		/*
+ 		 * To provide required timeing and allow FIFO transfer,
+ 		 * __stop_tx_rs485() must be called only when both FIFO and
+-		 * shift register are empty. It is for device driver to enable
+-		 * interrupt on TEMT.
++		 * shift register are empty. The device driver should either
++		 * enable interrupt on TEMT or set UART_CAP_NOTEMT that will
++		 * enlarge stop_tx_timer by the tx time of one frame to cover
++		 * for emptying of the shift register.
+ 		 */
+-		if ((lsr & BOTH_EMPTY) != BOTH_EMPTY)
+-			return;
+ 
+-		__stop_tx_rs485(p);
++		if (!(lsr & UART_LSR_TEMT)) {
++			if (!(p->capabilities & UART_CAP_NOTEMT))
++				return;
++			/*
++			 * RTS might get deasserted too early with the normal
++			 * frame timing formula. It seems to suggest THRE might
++			 * get asserted already during tx of the stop bit
++			 * rather than after it is fully sent.
++			 * Roughly estimate 1 extra bit here with / 7.
++			 */
++			stop_delay = p->port.frame_time;
++		}
++
++		__stop_tx_rs485(p, stop_delay);
+ 	}
+ 	__do_stop_tx(p);
+ }
+@@ -1610,9 +1629,7 @@ static inline void start_tx_rs485(struct uart_port *port)
+ 		up->rs485_start_tx(up);
+ 
+ 		if (up->port.rs485.delay_rts_before_send > 0) {
+-			em485->active_timer = &em485->start_tx_timer;
+-			start_hrtimer_ms(&em485->start_tx_timer,
+-					 up->port.rs485.delay_rts_before_send);
++			mdelay(port->rs485.delay_rts_before_send);
+ 			return;
+ 		}
+ 	}
+diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
+index 40fff38..48dd83e 100644
+--- a/drivers/tty/serial/serial_core.c
++++ b/drivers/tty/serial/serial_core.c
+@@ -24,6 +24,7 @@
+ #include <linux/sysrq.h>
+ #include <linux/delay.h>
+ #include <linux/mutex.h>
++#include <linux/math64.h>
+ #include <linux/security.h>
+ 
+ #include <linux/irq.h>
+@@ -334,6 +335,7 @@ uart_update_timeout(struct uart_port *port, unsigned int cflag,
+ 		    unsigned int baud)
+ {
+ 	unsigned int bits;
++	u64 frame_time;
+ 
+ 	/* byte size and parity */
+ 	switch (cflag & CSIZE) {
+@@ -356,11 +358,10 @@ uart_update_timeout(struct uart_port *port, unsigned int cflag,
+ 	if (cflag & PARENB)
+ 		bits++;
+ 
+-	/*
+-	 * The total number of bits to be transmitted in the fifo.
+-	 */
+-	bits = bits * port->fifosize;
++	frame_time = (u64)bits * NSEC_PER_SEC;
++	port->frame_time = DIV64_U64_ROUND_UP(frame_time, baud);
+ 
++	bits *= port->fifosize;
+ 	/*
+ 	 * Figure the timeout to send the above number of bits.
+ 	 * Add .02 seconds of slop
+@@ -1674,10 +1675,8 @@ static void uart_wait_until_sent(struct tty_struct *tty, int timeout)
+ 	 * Note: we have to use pretty tight timings here to satisfy
+ 	 * the NIST-PCTS.
+ 	 */
+-	char_time = (port->timeout - HZ/50) / port->fifosize;
+-	char_time = char_time / 5;
+-	if (char_time == 0)
+-		char_time = 1;
++	char_time = max(nsecs_to_jiffies(port->frame_time / 5), 1UL);
++
+ 	if (timeout && timeout < char_time)
+ 		char_time = timeout;
+ 
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 6df4c33..06b4732 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -233,6 +233,7 @@ struct uart_port {
+ 	int			hw_stopped;		/* sw-assisted CTS flow state */
+ 	unsigned int		mctrl;			/* current modem ctrl settings */
+ 	unsigned int		timeout;		/* character-based timeout */
++	unsigned int		frame_time;		/* frame timing in ns */
+ 	unsigned int		type;			/* port type */
+ 	const struct uart_ops	*ops;
+ 	unsigned int		custom_divisor;
