@@ -8,7 +8,7 @@
 	model = "TELEOFIS LT70";
 
 	chosen {
-		bootargs = "console=ttyS0,115200";
+		bootargs = "console=ttyS1,115200";
 	};
 
 	leds {
