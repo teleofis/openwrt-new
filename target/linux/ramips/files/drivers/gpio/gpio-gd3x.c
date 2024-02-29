@@ -27,20 +27,24 @@
 #define GD3X_PIN_MODE_IN  1
 #define GD3X_PIN_MODE_ADC 2
 
+#define GD3X_FW_VER_PROJECT_REG		0x1ec		// ver project code
+#define GD3X_FW_VER_BOARD_REG		0x1ed		// ver board code
+#define GD3X_FW_VER_ADAPT_REG		0x1ee		// ver adaptation code
+#define GD3X_FW_VER_REG				0x1ef		// ver firmware code
+#define GD3X_FW_VER_TYPE_REG		0x1f0		// ver firmware type
+
 #define GD3X_TEMP_REG				0x504		// temperature
-#define GD3X_FW_VER_REG				0x1ff		// firmware version
 #define GD3X_BL_VER_REG				0x1ff		// fixme: bootloader version
-#define GD3X_INT_SUM_REG			0x201		// interrupt summary mask
 #define GD3X_INT_SWITCH_REG			0x200		// interrupt on-off mask
-#define GD3X_VOLT_THRESHOLD_REG		0x701		// fixme: in_voltage threshold
+#define GD3X_INT_SUM_REG			0x201		// fixme: interrupt summary mask
 #define GD3X_USB_CONTROL_REG		0x107		// USB power control (auto - 0, manual - 1)
 #define GD3X_POEOUT_CONTROL_REG		0x10A		// PoE OUT power control (auto - 0, manual - 1)
-#define GD3X_WDT_MARGIN_REG			0x107		// fixme: 
-#define GD3X_HEAT_END_TEMP_REG		0x107		// fixme: 
-#define GD3X_HEAT_END_TIME_REG		0x107		// fixme: 
-#define GD3X_HEAT_HYST_REG			0x107		// fixme: 
+#define GD3X_WDT_MARGIN_REG			0x101		// WD toggle period
+#define GD3X_HEAT_END_TEMP_REG		0x102		// heater max temp 
+#define GD3X_HEAT_END_TIME_REG		0x103		// heater max time 
+#define GD3X_HEAT_HYST_REG			0x111		// heater temp hysteresis
+#define GD3X_VOLT_THRESHOLD_REG		0x110		// in_voltage threshold
 #define GD3X_FW_UPGRADE_REG			0x1fc		// reboot to bootloader
-#define GD3X_INPUT_VOLT_REG			0x700		// fixme: input voltage
 
 #define GD3X_ADC0_REG				0x700
 #define GD3X_ADC1_REG				0x701
@@ -51,6 +55,7 @@
 #define GD3X_ADC6_REG				0x706
 #define GD3X_ADC7_REG				0x707
 #define GD3X_ADC8_REG				0x708
+#define GD3X_INPUT_VOLT_REG			0x709		// input voltage
 
 #define GD3X_PU0_REG				0x300
 #define GD3X_PU1_REG				0x301
@@ -132,11 +137,11 @@ struct gd3x_pin_config gd3x_board_config[GD3X_GPIO_NUM_PINS] =
 	{ 0x109, GD3X_PIN_MODE_OUT , "gpio22"   , 0 }, // used as WIFI led
 	//{ 0x10A, GD3X_PIN_MODE_OUT , "gpio23"   , 0 }, // used as PoE Out power management (auto - 0, manual - 1)
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio23"   , 0 }, // reserved
-	{ 0x202, GD3X_PIN_MODE_IN  , "gpio24"   , 0 }, // used as PoE error INT
-	{ 0x203, GD3X_PIN_MODE_IN  , "gpio25"   , 0 }, // used as USB error INT
-	{ 0x204, GD3X_PIN_MODE_IN  , "gpio26"   , 0 }, // used as heating INT
-	{ 0x203, GD3X_PIN_MODE_IN  , "gpio27"   , 0 }, // used as voltage INT
-	{ 0x203, GD3X_PIN_MODE_IN  , "gpio28"   , 0 }, // reserved
+	{ 0x502, GD3X_PIN_MODE_IN  , "gpio24"   , 0 }, // used as PoE error INT
+	{ 0x503, GD3X_PIN_MODE_IN  , "gpio25"   , 0 }, // used as USB error INT
+	{ 0x504, GD3X_PIN_MODE_IN  , "gpio26"   , 0 }, // used as heating INT
+	{ 0x505, GD3X_PIN_MODE_IN  , "gpio27"   , 0 }, // used as wd INT
+	{ 0x506, GD3X_PIN_MODE_IN  , "gpio28"   , 0 }, // used as voltage INT
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio29"   , 0 }, // reserved
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio30"   , 0 }, // reserved
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio31"   , 0 } // reserved
@@ -341,13 +346,25 @@ static ssize_t fw_version_show(struct device *dev, struct device_attribute *da,
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
+	int project,board,adapt,ver,type;
 
-	value = i2c_read_word(data->client,GD3X_FW_VER_REG);
-	if(value<0)
-		return value;
+	project = i2c_read_word(data->client,GD3X_FW_VER_PROJECT_REG);
+	if(project<0)
+		return "N/A";
+	board = i2c_read_word(data->client,GD3X_FW_VER_BOARD_REG);
+	if(board<0)
+		return "N/A";
+	adapt = i2c_read_word(data->client,GD3X_FW_VER_ADAPT_REG);
+	if(adapt<0)
+		return "N/A";
+	ver = i2c_read_word(data->client,GD3X_FW_VER_REG);
+	if(ver<0)
+		return "N/A";
+	type = i2c_read_word(data->client,GD3X_FW_VER_TYPE_REG);
+	if(type<0)
+		return "N/A";
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return scnprintf(buf, PAGE_SIZE, "%d.%d.%d.%d.%d\n", project, board, adapt, ver, type);
 }
 
 static ssize_t bl_version_show(struct device *dev, struct device_attribute *da,
@@ -667,8 +684,8 @@ static ssize_t fw_upgrade_store(struct device *dev, struct device_attribute *da,
 	err = kstrtoul(buf, 10, &value);
 	if (err)
 		return err;
-
-	err = i2c_write_word(data->client, GD3X_FW_UPGRADE_REG, value);
+	//fixme
+	err = i2c_write_word(data->client, GD3X_FW_UPGRADE_REG, 0xdddddddd);
 	if (err)
 		return err;
 
