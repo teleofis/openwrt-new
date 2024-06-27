@@ -32,9 +32,9 @@
 #define GD3X_FW_VER_ADAPT_REG		0x1ee		// ver adaptation code
 #define GD3X_FW_VER_REG				0x1ef		// ver firmware code
 #define GD3X_FW_VER_TYPE_REG		0x1f0		// ver firmware type
+#define GD3X_BL_VER_REG				0x1ff		// bootloader version
 
 #define GD3X_TEMP_REG				0x504		// temperature
-#define GD3X_BL_VER_REG				0x1ff		// fixme: bootloader version
 #define GD3X_INT_SWITCH_REG			0x200		// interrupt on-off mask
 #define GD3X_INT_SUM_REG			0x201		// fixme: interrupt summary mask
 #define GD3X_USB_CONTROL_REG		0x107		// USB power control (auto - 0, manual - 1)
@@ -44,6 +44,7 @@
 #define GD3X_HEAT_END_TIME_REG		0x103		// heater max time 
 #define GD3X_HEAT_HYST_REG			0x111		// heater temp hysteresis
 #define GD3X_VOLT_THRESHOLD_REG		0x110		// in_voltage threshold
+#define GD3X_SYSTEM_REBOOT			0x1f3		// linux system reboot
 #define GD3X_FW_UPGRADE_REG			0x1fc		// reboot to bootloader
 
 #define GD3X_ADC0_REG				0x700
@@ -76,6 +77,8 @@
 #define GD3X_PD6_REG				0x406
 #define GD3X_PD7_REG				0x407
 #define GD3X_PD8_REG				0x408
+
+#define GD3X_UPTIME				0x5ff
 
 #define GD3X_CHAN(_index) \
 	{ \
@@ -190,14 +193,10 @@ static int i2c_write_word(struct i2c_client *client, u32 reg, unsigned word)
 	};
 
 	/* write data registers */
-	i2c_lock_bus(adap, I2C_LOCK_SEGMENT);
-	if ( __i2c_transfer(client->adapter, &msgs[0], 1) != 1 || \
-			__i2c_transfer(client->adapter, &msgs[1], 1) != 1) {
+	if ( i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
 		dev_err(&client->dev, "%s: write error\n", __func__);
-		i2c_unlock_bus(adap, I2C_LOCK_SEGMENT);
 		ret = -EIO;
 	}
-	i2c_unlock_bus(adap, I2C_LOCK_SEGMENT);
 
 	return ret;
 }
@@ -227,14 +226,10 @@ static int i2c_read_word(struct i2c_client *client, u32 reg)
 	};
 
 	/* read data registers */
-	i2c_lock_bus(adap, I2C_LOCK_SEGMENT);
-	if ( __i2c_transfer(client->adapter, &msgs[0], 1) != 1 || \
-			__i2c_transfer(client->adapter, &msgs[1], 1) != 1) {
+	if ( i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
 		dev_err(&client->dev, "%s: read error\n", __func__);
-		i2c_unlock_bus(adap, I2C_LOCK_SEGMENT);
 		return -EIO;
 	}
-	i2c_unlock_bus(adap, I2C_LOCK_SEGMENT);
 
 	return ((u32)buf[0])<<24 | ((u32)buf[1])<<16 | ((u32)buf[2])<<8 | (u32)buf[3] ;
 }
@@ -378,7 +373,8 @@ static ssize_t bl_version_show(struct device *dev, struct device_attribute *da,
 	if(value<0)
 		return value;
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return scnprintf(buf, PAGE_SIZE, "%d.%d.%d.%d\n", (value & 0xff000000) >> 24, 
+		(value & 0xff0000) >> 16, (value & 0xff00) >> 8, value & 0xff);
 }
 
 static ssize_t input_voltage_show(struct device *dev, struct device_attribute *da,
@@ -692,6 +688,53 @@ static ssize_t fw_upgrade_store(struct device *dev, struct device_attribute *da,
 	return count;
 }
 
+static ssize_t system_reboot_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct gd3x *data = i2c_get_clientdata(client);
+	int value;
+
+	value = i2c_read_word(data->client,GD3X_SYSTEM_REBOOT);
+	if(value<0)
+		return value;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+}
+
+static ssize_t system_reboot_store(struct device *dev, struct device_attribute *da,
+			 const char *buf, size_t count)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct gd3x *data = i2c_get_clientdata(client);
+	unsigned long value;
+	int err;
+
+	err = kstrtoul(buf, 10, &value);
+	if (err)
+		return err;
+
+	err = i2c_write_word(data->client, GD3X_SYSTEM_REBOOT, value);
+	if (err)
+		return err;
+
+	return count;
+}
+
+static ssize_t uptime_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct gd3x *data = i2c_get_clientdata(client);
+	int value;
+
+	value = i2c_read_word(data->client,GD3X_UPTIME);
+	if(value<0)
+		return value;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+}
+
 /*-----------------------------------------------------------------------*/
 /* sysfs attributes for gd3x */
 
@@ -709,6 +752,8 @@ static DEVICE_ATTR_RW(wdt_margin);
 static DEVICE_ATTR_RW(heat_end_temp);
 static DEVICE_ATTR_RW(heat_end_time);
 static DEVICE_ATTR_RW(heat_hyst);
+static DEVICE_ATTR_RW(system_reboot);
+static DEVICE_ATTR_RO(uptime);
 
 static struct attribute *gd3x_attrs[] = {
 	&dev_attr_fw_upgrade.attr,
@@ -725,6 +770,8 @@ static struct attribute *gd3x_attrs[] = {
 	&dev_attr_heat_end_temp.attr,
 	&dev_attr_heat_end_time.attr,
 	&dev_attr_heat_hyst.attr,
+	&dev_attr_system_reboot.attr,
+	&dev_attr_uptime.attr,
 	NULL
 };
 static const struct attribute_group gd3x_groups = {

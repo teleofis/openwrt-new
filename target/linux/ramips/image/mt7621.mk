@@ -2324,7 +2324,7 @@ define Device/teleofis_lt70
   kmod-pps kmod-pps-ldisc kmod-pps-gpio kmod-usb2 kmod-usb3 \
   kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
   kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
-  kmod-button-hotplug \
+  kmod-button-hotplug kmod-mtd-rw \
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
