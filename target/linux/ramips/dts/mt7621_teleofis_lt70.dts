@@ -41,6 +41,11 @@
 			gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
 			linux,code = <0x100>;
 		};
+		reset {
+			label = "reset";
+			gpios = <&gpio 18 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
 	};
 
 	pps {

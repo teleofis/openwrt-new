@@ -2344,6 +2344,7 @@ define Device/teleofis_lt70
   base-files-common base-files-lt70 \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
   htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients xl2tpd bc \
   ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
   mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
@@ -2351,7 +2352,7 @@ define Device/teleofis_lt70
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
-  luci-app-powersupply powersupply event-handler \
+  event-handler svcontrol svupgrade \
   lsof snmpd socat iconv python3 python3-pip \
   pps-tools i2c-tools usbutils
 endef

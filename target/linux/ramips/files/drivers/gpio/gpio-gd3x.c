@@ -20,6 +20,8 @@
 #include <linux/iio/sysfs.h>
 #include <linux/delay.h>
 
+#define GD3X_P48_ID 48
+
 #define GD3X_GPIO_NUM_PINS 32
 #define GD3X_ADC_NUM_PINS 9
 
@@ -38,12 +40,13 @@
 #define GD3X_INT_SWITCH_REG			0x200		// interrupt on-off mask
 #define GD3X_INT_SUM_REG			0x201		// fixme: interrupt summary mask
 #define GD3X_USB_CONTROL_REG		0x107		// USB power control (auto - 0, manual - 1)
-#define GD3X_POEOUT_CONTROL_REG		0x10A		// PoE OUT power control (auto - 0, manual - 1)
+#define GD3X_POEOUT_CONTROL_REG		0x10a		// PoE OUT power control (auto - 0, manual - 1)
 #define GD3X_WDT_MARGIN_REG			0x101		// WD toggle period
 #define GD3X_HEAT_END_TEMP_REG		0x102		// heater max temp 
 #define GD3X_HEAT_END_TIME_REG		0x103		// heater max time 
 #define GD3X_HEAT_HYST_REG			0x111		// heater temp hysteresis
 #define GD3X_VOLT_THRESHOLD_REG		0x110		// in_voltage threshold
+#define GD3X_FW_UPGRADE_FLAG		0x1eb		// reboot to bootloader flag (volatile - 0, non volatile - 1)
 #define GD3X_SYSTEM_REBOOT			0x1f3		// linux system reboot
 #define GD3X_FW_UPGRADE_REG			0x1fc		// reboot to bootloader
 
@@ -321,19 +324,42 @@ static const struct iio_chan_spec gd3x_channels[] = {
 	GD3X_CHAN(8),
 };
 
-
-static ssize_t temp_show(struct device *dev, struct device_attribute *da,
-			 char *buf)
-{
+static ssize_t gd3x_attribute_show(struct device *dev, struct device_attribute *da,
+			 char *buf, u32 reg){
 	struct i2c_client *client = to_i2c_client(dev);
 	struct gd3x *data = i2c_get_clientdata(client);
 	int value;
 
-	value = i2c_read_word(data->client,GD3X_TEMP_REG);
+	value = i2c_read_word(data->client, reg);
 	if(value<0)
 		return value;
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+}
+
+static ssize_t gd3x_attribute_store(struct device *dev, struct device_attribute *da,
+			 const char *buf, size_t count, u32 reg)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct gd3x *data = i2c_get_clientdata(client);
+	unsigned long value;
+	int err;
+
+	err = kstrtoul(buf, 10, &value);
+	if (err)
+		return err;
+
+	err = i2c_write_word(data->client, reg, value);
+	if (err)
+		return err;
+
+	return count;
+}
+
+static ssize_t temp_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	return gd3x_attribute_show(dev, da, buf, GD3X_TEMP_REG);
 }
 
 static ssize_t fw_version_show(struct device *dev, struct device_attribute *da,
@@ -380,293 +406,109 @@ static ssize_t bl_version_show(struct device *dev, struct device_attribute *da,
 static ssize_t input_voltage_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_INPUT_VOLT_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_INPUT_VOLT_REG);
 }
 
 static ssize_t int_sum_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_INT_SUM_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_INT_SUM_REG);
 }
 
 static ssize_t int_switch_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_INT_SWITCH_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_INT_SWITCH_REG);
 }
 
 static ssize_t int_switch_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_INT_SWITCH_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_INT_SWITCH_REG);
 }
 
 static ssize_t voltage_threshold_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_VOLT_THRESHOLD_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_VOLT_THRESHOLD_REG);
 }
 
 static ssize_t voltage_threshold_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_VOLT_THRESHOLD_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_VOLT_THRESHOLD_REG);
 }
 
 static ssize_t usb_control_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_USB_CONTROL_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_USB_CONTROL_REG);
 }
 
 static ssize_t usb_control_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_USB_CONTROL_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_USB_CONTROL_REG);
 }
 
 static ssize_t poeout_control_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_POEOUT_CONTROL_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_POEOUT_CONTROL_REG);
 }
 
 static ssize_t poeout_control_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_POEOUT_CONTROL_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_POEOUT_CONTROL_REG);
 }
 
 static ssize_t wdt_margin_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_WDT_MARGIN_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_WDT_MARGIN_REG);
 }
 
 static ssize_t wdt_margin_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_WDT_MARGIN_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_WDT_MARGIN_REG);
 }
 
 static ssize_t heat_end_temp_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_HEAT_END_TEMP_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_HEAT_END_TEMP_REG);
 }
 
 static ssize_t heat_end_temp_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_HEAT_END_TEMP_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_HEAT_END_TEMP_REG);
 }
 
 static ssize_t heat_end_time_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_HEAT_END_TIME_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_HEAT_END_TIME_REG);
 }
 
 static ssize_t heat_end_time_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_HEAT_END_TIME_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_HEAT_END_TIME_REG);
 }
 
 static ssize_t heat_hyst_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_HEAT_HYST_REG);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_HEAT_HYST_REG);
 }
 
 static ssize_t heat_hyst_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
-
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
-
-	err = i2c_write_word(data->client, GD3X_HEAT_HYST_REG, value);
-	if (err)
-		return err;
-
-	return count;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_HEAT_HYST_REG);
 }
 
 static ssize_t fw_upgrade_store(struct device *dev, struct device_attribute *da,
@@ -691,48 +533,31 @@ static ssize_t fw_upgrade_store(struct device *dev, struct device_attribute *da,
 static ssize_t system_reboot_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_SYSTEM_REBOOT);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_SYSTEM_REBOOT);
 }
 
 static ssize_t system_reboot_store(struct device *dev, struct device_attribute *da,
 			 const char *buf, size_t count)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	unsigned long value;
-	int err;
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_SYSTEM_REBOOT);
+}
 
-	err = kstrtoul(buf, 10, &value);
-	if (err)
-		return err;
+static ssize_t fw_upg_flag_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	return gd3x_attribute_show(dev, da, buf, GD3X_FW_UPGRADE_FLAG);
+}
 
-	err = i2c_write_word(data->client, GD3X_SYSTEM_REBOOT, value);
-	if (err)
-		return err;
-
-	return count;
+static ssize_t fw_upg_flag_store(struct device *dev, struct device_attribute *da,
+			 const char *buf, size_t count)
+{
+	return gd3x_attribute_store(dev, da, buf, count, GD3X_FW_UPGRADE_FLAG);
 }
 
 static ssize_t uptime_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct gd3x *data = i2c_get_clientdata(client);
-	int value;
-
-	value = i2c_read_word(data->client,GD3X_UPTIME);
-	if(value<0)
-		return value;
-
-	return scnprintf(buf, PAGE_SIZE, "%d\n", value);
+	return gd3x_attribute_show(dev, da, buf, GD3X_UPTIME);
 }
 
 /*-----------------------------------------------------------------------*/
@@ -754,6 +579,7 @@ static DEVICE_ATTR_RW(heat_end_time);
 static DEVICE_ATTR_RW(heat_hyst);
 static DEVICE_ATTR_RW(system_reboot);
 static DEVICE_ATTR_RO(uptime);
+static DEVICE_ATTR_RW(fw_upg_flag);
 
 static struct attribute *gd3x_attrs[] = {
 	&dev_attr_fw_upgrade.attr,
@@ -772,6 +598,7 @@ static struct attribute *gd3x_attrs[] = {
 	&dev_attr_heat_hyst.attr,
 	&dev_attr_system_reboot.attr,
 	&dev_attr_uptime.attr,
+	&dev_attr_fw_upg_flag.attr,
 	NULL
 };
 static const struct attribute_group gd3x_groups = {
