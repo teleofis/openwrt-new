@@ -94,7 +94,7 @@
 	no-1-8-v;
 	pm-ignore-notify;
 	keep-power-in-suspend;
-	non-removable;
+	mediatek,cd-poll;
 	status = "okay";
 };
 
