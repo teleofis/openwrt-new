@@ -145,7 +145,7 @@ struct gd3x_pin_config gd3x_board_config[GD3X_GPIO_NUM_PINS] =
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio23"   , 0 }, // reserved
 	{ 0x502, GD3X_PIN_MODE_IN  , "gpio24"   , 0 }, // used as PoE error INT
 	{ 0x503, GD3X_PIN_MODE_IN  , "gpio25"   , 0 }, // used as USB error INT
-	{ 0x504, GD3X_PIN_MODE_IN  , "gpio26"   , 0 }, // used as heating INT
+	{ 0x501, GD3X_PIN_MODE_IN  , "gpio26"   , 0 }, // used as heating INT
 	{ 0x505, GD3X_PIN_MODE_IN  , "gpio27"   , 0 }, // used as wd INT
 	{ 0x506, GD3X_PIN_MODE_IN  , "gpio28"   , 0 }, // used as voltage INT
 	{ 0x203, GD3X_PIN_MODE_IN  , "gpio29"   , 0 }, // reserved
