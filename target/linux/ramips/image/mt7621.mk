@@ -2352,6 +2352,7 @@ define Device/teleofis_lt70
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
+  pptpd ppp-mod-pptp \
   event-handler svcontrol svupgrade \
   lsof snmpd socat iconv python3 python3-pip \
   pps-tools i2c-tools usbutils
