@@ -2354,7 +2354,45 @@ define Device/teleofis_lt70
   collectd-mod-thermal collectd-mod-exec \
   pptpd ppp-mod-pptp \
   event-handler svcontrol svupgrade \
-  lsof snmpd socat iconv python3 python3-pip \
+  lsof snmpd socat iconv python3 python3-pip python3-pyserial\
   pps-tools i2c-tools usbutils
+  UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
+  IMAGES += mtd-all.bin
+  IMAGE/mtd-all.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs 
 endef
 TARGET_DEVICES += teleofis_lt70
+
+define Device/teleofis_lt70u
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := Teleofis
+  DEVICE_MODEL := LT70U
+  DEVICE_PACKAGES := kmod-sdhci-mt7620 \
+  kmod-usb2 kmod-usb3 \
+  kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
+  kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
+  kmod-button-hotplug kmod-mtd-rw \
+  kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
+  kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
+  kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
+  luci luci-theme-teleofis \
+  luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
+  luci-i18n-firewall-ru luci-i18n-opkg-ru \
+  pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
+  report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
+  base-files-common base-files-lt70u \
+  iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
+  htop iperf3 nano picocom zram-swap stm32flash-gd bc \
+  ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools \
+  coreutils coreutils-sleep coreutils-stty \
+  collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
+  collectd-mod-uptime collectd-mod-processes collectd-mod-network \
+  collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
+  collectd-mod-thermal collectd-mod-exec \
+  event-handler svcontrol svupgrade \
+  lsof snmpd socat iconv python3 python3-pip python3-pyserial \
+  i2c-tools usbutils openocd
+endef
+TARGET_DEVICES += teleofis_lt70u
