@@ -20,6 +20,8 @@
 #include <linux/iio/sysfs.h>
 #include <linux/delay.h>
 
+#include <linux/crc32.h>
+
 #define GD3X_P48_ID 48
 
 #define GD3X_GPIO_NUM_PINS 32
@@ -29,6 +31,8 @@
 #define GD3X_PIN_MODE_IN  1
 #define GD3X_PIN_MODE_ADC 2
 
+#define GD3X_INPUT_SV_VOLT_REG		0x1e0		// input sv voltage
+#define GD3X_INTERNAL_TEMP_REG		0x1ea		// internal sv temperature
 #define GD3X_FW_VER_PROJECT_REG		0x1ec		// ver project code
 #define GD3X_FW_VER_BOARD_REG		0x1ed		// ver board code
 #define GD3X_FW_VER_ADAPT_REG		0x1ee		// ver adaptation code
@@ -45,10 +49,12 @@
 #define GD3X_HEAT_END_TEMP_REG		0x102		// heater max temp 
 #define GD3X_HEAT_END_TIME_REG		0x103		// heater max time 
 #define GD3X_HEAT_HYST_REG			0x111		// heater temp hysteresis
+#define GD3X_I2C_ERRORS_CNT_REG     0x112		// supervisi2c errorc counter
 #define GD3X_VOLT_THRESHOLD_REG		0x110		// in_voltage threshold
 #define GD3X_FW_UPGRADE_FLAG		0x1eb		// reboot to bootloader flag (volatile - 0, non volatile - 1)
 #define GD3X_SYSTEM_REBOOT			0x1f3		// linux system reboot
 #define GD3X_FW_UPGRADE_REG			0x1fc		// reboot to bootloader
+#define GD3X_WD_REBOOT_COUNTER		0x1df		// wd reboot counter
 
 #define GD3X_ADC0_REG				0x700
 #define GD3X_ADC1_REG				0x701
@@ -81,7 +87,8 @@
 #define GD3X_PD7_REG				0x407
 #define GD3X_PD8_REG				0x408
 
-#define GD3X_UPTIME				0x5ff
+#define GD3X_UPTIME					0x5ff
+#define GD3X_FOO					0x888
 
 #define GD3X_CHAN(_index) \
 	{ \
@@ -105,6 +112,8 @@ struct gd3x {
 	struct i2c_client *client;
 	u16 buffer;
 	struct mutex lock;
+	u32 index;
+	u32 err_count;
 };
 
 struct gd3x_pin_config {
@@ -167,74 +176,115 @@ struct gd3x_pin_config gd3x_adc_config[GD3X_ADC_NUM_PINS] =
     { GD3X_ADC8_REG,   GD3X_PIN_MODE_ADC , "adc8"    , 0 }  // used as adc8
 };
 
-static int i2c_write_word(struct i2c_client *client, u32 reg, unsigned word)
+typedef struct __attribute__ ((packed)){  // 2k size
+	uint32_t index;
+	uint32_t address;
+	uint32_t data;
+	uint32_t crc;
+}i2c_transfer_data;  // Data to write for writng data sequence
+
+static int i2c_transfer_words(u32 op, struct i2c_client *client, u32 reg, unsigned word)
 {
 	struct i2c_adapter *adap = client->adapter;
-	unsigned char addr[4] = { (unsigned char )((reg & 0xff000000) >> 24),
-					(unsigned char )((reg & 0xff0000) >> 16),
-					(unsigned char )((reg & 0xff00) >> 8),
-					(unsigned char )(reg & 0xff) };
-	unsigned char buf[4] = { (unsigned char )((word & 0xff000000) >> 24),
-					(unsigned char )((word & 0xff0000) >> 16),
-					(unsigned char )((word & 0xff00) >> 8),
-					(unsigned char )(word & 0xff) };
-	int ret = 0;
+	struct gd3x *data = i2c_get_clientdata(client);
+	u32 index_r, index_rw, crc_r, crc_rw, crc_rx_result;
+	i2c_transfer_data rx, tx;
 
-	struct i2c_msg msgs[] = {
-		{/* setup write ptr */
-			.addr = client->addr,
-			.flags = 0,
-			.len = 4,
-			.buf = addr
-		},
-		{/* write data */
-			.addr = client->addr,
-			.flags = 0,
-			.len = 4,
-			.buf = buf
-		},
-	};
+	memset(&rx, 0, sizeof(i2c_transfer_data));
+	memset(&tx, 0, sizeof(i2c_transfer_data));
 
-	/* write data registers */
-	if ( i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
-		dev_err(&client->dev, "%s: write error\n", __func__);
-		ret = -EIO;
+	if(op == 0){
+		reg |= 0x80000000;
 	}
 
-	return ret;
-}
+	data->index += 1;
+	index_rw = data->index;
 
-static int i2c_read_word(struct i2c_client *client, u32 reg)
-{
-	struct i2c_adapter *adap = client->adapter;
-	unsigned char addr[4] = { (unsigned char )((reg & 0xff000000) >> 24),
-					(unsigned char )((reg & 0xff0000) >> 16),
-					(unsigned char )((reg & 0xff00) >> 8),
-					(unsigned char )(reg & 0xff) };
-	unsigned char buf[4];
+	tx.index	= index_rw;
+	tx.address	= reg;
+	tx.data		= word;
+	crc_rw		= crc32(0, (unsigned char *)&tx, (sizeof(tx) - sizeof(uint32_t)));
+	tx.crc		= crc_rw;
+
+	rx.index	= 0;
+	rx.address	= 0;
+	rx.data		= 0;
+	rx.crc		= 0;
 
 	struct i2c_msg msgs[] = {
-		{/* setup read ptr */
+		{
 			.addr = client->addr,
 			.flags = 0,
-			.len = 4,
-			.buf = addr
+			.len = sizeof(i2c_transfer_data),
+			.buf = (u32)&tx,
 		},
-		{/* read data */
+		{
 			.addr = client->addr,
 			.flags = I2C_M_RD,
-			.len = 4,
-			.buf = buf
+			.len = sizeof(i2c_transfer_data),
+			.buf = (u32)&rx,
 		},
 	};
 
 	/* read data registers */
-	if ( i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
-		dev_err(&client->dev, "%s: read error\n", __func__);
+	if(i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
+		dev_err(&client->dev, "%s: transfer error\n", __func__);
 		return -EIO;
 	}
 
-	return ((u32)buf[0])<<24 | ((u32)buf[1])<<16 | ((u32)buf[2])<<8 | (u32)buf[3] ;
+	crc_rx_result = crc32(0, &rx, (sizeof(rx) - sizeof(uint32_t)));
+
+	if(rx.address == 0xffff){
+		switch(rx.data){
+		case 0:
+			dev_err(&client->dev,"sv: cannot read from 0x%0x address\n", tx.address);
+			break;
+		case 1:
+			dev_err(&client->dev,"sv: cannot write to 0x%0x address\n", tx.address);
+			break;
+		case 2:
+			dev_err(&client->dev,"sv: checksum does not match when accessing the address 0x%0x\n", tx.address);
+			break;
+		default:
+			dev_err(&client->dev,"sv: unknown error %d\n when accessing the address 0x%0x\n", rx.data, tx.address);
+			break;
+		}
+
+		data->err_count += 1;
+		return -EIO;
+	} else {
+		if(crc_rx_result != rx.crc) {
+			dev_info(&client->dev,"wrong checksum: expected 0x%0x, but received: 0x%0x (index: 0x%0x; adress: 0x%0x; data: 0x%0x) \n", crc_rx_result, rx.crc, rx.index, rx.address, rx.data);
+			data->err_count += 1;
+			return -EIO;
+		}
+		if(rx.address != tx.address) {
+			dev_err(&client->dev,"wrong address: expected 0x%0x, but received 0x%0x \n", tx.address, rx.address);
+			data->err_count += 1;
+			return -EIO;
+		}
+		if(rx.index != tx.index) {
+			dev_err(&client->dev,"wrong index: expected 0x%0x, but received 0x%0x \n", tx.index, rx.index);
+			data->err_count += 1;
+			return -EIO;
+		}
+	}
+
+	if(op == 0){
+		return 0;
+	}
+
+	return rx.data;
+}
+
+static int i2c_write_word(struct i2c_client *client, u32 reg, unsigned word)
+{
+	return i2c_transfer_words(0, client, reg, word);
+}
+
+static int i2c_read_word(struct i2c_client *client, u32 reg)
+{
+	return i2c_transfer_words(1, client, reg, 0);
 }
 
 static void gd3x_set(struct gpio_chip *chip, unsigned offset, int value){
@@ -362,6 +412,12 @@ static ssize_t temp_show(struct device *dev, struct device_attribute *da,
 	return gd3x_attribute_show(dev, da, buf, GD3X_TEMP_REG);
 }
 
+static ssize_t sv_temp_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	return gd3x_attribute_show(dev, da, buf, GD3X_INTERNAL_TEMP_REG);
+}
+
 static ssize_t fw_version_show(struct device *dev, struct device_attribute *da,
 			 char *buf)
 {
@@ -407,6 +463,12 @@ static ssize_t input_voltage_show(struct device *dev, struct device_attribute *d
 			 char *buf)
 {
 	return gd3x_attribute_show(dev, da, buf, GD3X_INPUT_VOLT_REG);
+}
+
+static ssize_t sv_voltage_show(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+	return gd3x_attribute_show(dev, da, buf, GD3X_INPUT_SV_VOLT_REG);
 }
 
 static ssize_t int_sum_show(struct device *dev, struct device_attribute *da,
@@ -560,45 +622,74 @@ static ssize_t uptime_show(struct device *dev, struct device_attribute *da,
 	return gd3x_attribute_show(dev, da, buf, GD3X_UPTIME);
 }
 
+static ssize_t i2c_errors_show(struct device *dev, struct device_attribute *da,
+			 char *buf){
+	struct i2c_client *client = to_i2c_client(dev);
+	struct gd3x *data = i2c_get_clientdata(client);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", data->err_count);
+}
+
+static ssize_t sv_i2c_errors_show(struct device *dev, struct device_attribute *da,
+			 char *buf){
+	return gd3x_attribute_show(dev, da, buf, GD3X_I2C_ERRORS_CNT_REG);
+}
+
+static ssize_t wd_reboot_counter_show(struct device *dev, struct device_attribute *da,
+			 char *buf){
+	return gd3x_attribute_show(dev, da, buf, GD3X_WD_REBOOT_COUNTER);
+}
+
 /*-----------------------------------------------------------------------*/
 /* sysfs attributes for gd3x */
 
-static DEVICE_ATTR_WO(fw_upgrade);
-static DEVICE_ATTR_RO(temp);
-static DEVICE_ATTR_RO(fw_version);
 static DEVICE_ATTR_RO(bl_version);
+static DEVICE_ATTR_RO(fw_version);
+static DEVICE_ATTR_RO(i2c_errors);
 static DEVICE_ATTR_RO(input_voltage);
 static DEVICE_ATTR_RO(int_sum);
-static DEVICE_ATTR_RW(int_switch);
-static DEVICE_ATTR_RW(voltage_threshold);
-static DEVICE_ATTR_RW(usb_control);
-static DEVICE_ATTR_RW(poeout_control);
-static DEVICE_ATTR_RW(wdt_margin);
+static DEVICE_ATTR_RO(sv_i2c_errors);
+static DEVICE_ATTR_RO(sv_temp);
+static DEVICE_ATTR_RO(sv_voltage);
+static DEVICE_ATTR_RO(temp);
+static DEVICE_ATTR_RO(uptime);
+static DEVICE_ATTR_RO(wd_reboot_counter);
+
+static DEVICE_ATTR_RW(fw_upg_flag);
 static DEVICE_ATTR_RW(heat_end_temp);
 static DEVICE_ATTR_RW(heat_end_time);
 static DEVICE_ATTR_RW(heat_hyst);
+static DEVICE_ATTR_RW(int_switch);
+static DEVICE_ATTR_RW(poeout_control);
 static DEVICE_ATTR_RW(system_reboot);
-static DEVICE_ATTR_RO(uptime);
-static DEVICE_ATTR_RW(fw_upg_flag);
+static DEVICE_ATTR_RW(usb_control);
+static DEVICE_ATTR_RW(voltage_threshold);
+static DEVICE_ATTR_RW(wdt_margin);
+
+static DEVICE_ATTR_WO(fw_upgrade);
 
 static struct attribute *gd3x_attrs[] = {
-	&dev_attr_fw_upgrade.attr,
-	&dev_attr_temp.attr,
-	&dev_attr_fw_version.attr,
 	&dev_attr_bl_version.attr,
-	&dev_attr_input_voltage.attr,
-	&dev_attr_int_sum.attr,
-	&dev_attr_int_switch.attr,
-	&dev_attr_voltage_threshold.attr,
-	&dev_attr_usb_control.attr,
-	&dev_attr_poeout_control.attr,
-	&dev_attr_wdt_margin.attr,
+	&dev_attr_fw_upg_flag.attr,
+	&dev_attr_fw_upgrade.attr,
+	&dev_attr_fw_version.attr,
 	&dev_attr_heat_end_temp.attr,
 	&dev_attr_heat_end_time.attr,
 	&dev_attr_heat_hyst.attr,
+	&dev_attr_i2c_errors.attr,
+	&dev_attr_input_voltage.attr,
+	&dev_attr_int_sum.attr,
+	&dev_attr_int_switch.attr,
+	&dev_attr_poeout_control.attr,
+	&dev_attr_sv_i2c_errors.attr,
+	&dev_attr_sv_temp.attr,
+	&dev_attr_sv_voltage.attr,
 	&dev_attr_system_reboot.attr,
+	&dev_attr_temp.attr,
 	&dev_attr_uptime.attr,
-	&dev_attr_fw_upg_flag.attr,
+	&dev_attr_usb_control.attr,
+	&dev_attr_voltage_threshold.attr,
+	&dev_attr_wd_reboot_counter.attr,
+	&dev_attr_wdt_margin.attr,
 	NULL
 };
 static const struct attribute_group gd3x_groups = {
@@ -639,6 +730,8 @@ static int gd3x_probe(struct i2c_client *client,
 		return -ENOMEM;
 	gpio = iio_priv(indio_dev);
 	gpio->client = client;
+	gpio->index = 0;
+	gpio->err_count = 0;
 
 	indio_dev->dev.parent = &client->dev;
 	indio_dev->dev.of_node = client->dev.of_node;

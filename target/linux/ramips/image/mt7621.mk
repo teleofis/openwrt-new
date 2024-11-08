@@ -2328,34 +2328,36 @@ define Device/teleofis_lt70
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
-  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi \
+  luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
   luci-proto-nbiot luci-proto-gre luci-proto-ip \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
   luci-i18n-firewall-ru luci-i18n-opkg-ru \
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
   pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
+  pptpd pptpd-ext ppp-mod-pptp luci-app-pptpd luci-i18n-pptpd-en luci-i18n-pptpd-ru \
   smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
   report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
   openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
   luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
   strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
+  snmpd-ssl luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
+  xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
   base-files-common base-files-lt70 \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
-  htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients xl2tpd bc \
+  htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients bc \
   ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
   mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
   collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
-  pptpd ppp-mod-pptp \
   event-handler svcontrol svupgrade \
-  lsof snmpd socat iconv python3 python3-pip python3-pyserial\
-  pps-tools i2c-tools usbutils
+  lsof socat iconv python3 python3-pip python3-pyserial\
+  pps-tools i2c-tools usbutils libustream-openssl
   UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
   IMAGES += mtd-all.bin
   IMAGE/mtd-all.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs 
@@ -2392,7 +2394,7 @@ define Device/teleofis_lt70u
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
   event-handler svcontrol svupgrade \
-  lsof snmpd socat iconv python3 python3-pip python3-pyserial \
+  lsof socat iconv python3 python3-pip python3-pyserial \
   i2c-tools usbutils openocd
 endef
 TARGET_DEVICES += teleofis_lt70u
