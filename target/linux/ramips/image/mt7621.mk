@@ -2340,7 +2340,12 @@ define Device/teleofis_lt70
   report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
   openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
   luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
-  strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
+  strongswan strongswan-minimal strongswan-ipsec strongswan-mod-des strongswan-mod-rc2 \
+  strongswan-mod-sha2 strongswan-mod-md5 strongswan-mod-revocation strongswan-mod-constraints \
+  strongswan-mod-pkcs1 strongswan-mod-pgp strongswan-mod-dnskey strongswan-mod-sshkey \
+  strongswan-mod-pem strongswan-mod-fips-prf strongswan-mod-attr strongswan-mod-resolve \
+  strongswan-mod-connmark strongswan-mod-xauth-generic \
+  luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
   snmpd-ssl luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
   xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
