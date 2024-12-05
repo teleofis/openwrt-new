@@ -185,10 +185,23 @@ typedef struct __attribute__ ((packed)){  // 2k size
 
 static int i2c_transfer_words(u32 op, struct i2c_client *client, u32 reg, unsigned word)
 {
-	struct i2c_adapter *adap = client->adapter;
 	struct gd3x *data = i2c_get_clientdata(client);
-	u32 index_r, index_rw, crc_r, crc_rw, crc_rx_result;
+	u32 index_rw, crc_rw, crc_rx_result;
 	i2c_transfer_data rx, tx;
+	struct i2c_msg msgs[] = {
+		{
+			.addr = client->addr,
+			.flags = 0,
+			.len = sizeof(i2c_transfer_data),
+			.buf = (unsigned char *)&tx,
+		},
+		{
+			.addr = client->addr,
+			.flags = I2C_M_RD,
+			.len = sizeof(i2c_transfer_data),
+			.buf = (unsigned char *)&rx,
+		}
+	};
 
 	memset(&rx, 0, sizeof(i2c_transfer_data));
 	memset(&tx, 0, sizeof(i2c_transfer_data));
@@ -210,21 +223,6 @@ static int i2c_transfer_words(u32 op, struct i2c_client *client, u32 reg, unsign
 	rx.address	= 0;
 	rx.data		= 0;
 	rx.crc		= 0;
-
-	struct i2c_msg msgs[] = {
-		{
-			.addr = client->addr,
-			.flags = 0,
-			.len = sizeof(i2c_transfer_data),
-			.buf = (u32)&tx,
-		},
-		{
-			.addr = client->addr,
-			.flags = I2C_M_RD,
-			.len = sizeof(i2c_transfer_data),
-			.buf = (u32)&rx,
-		},
-	};
 
 	/* read data registers */
 	if(i2c_transfer(client->adapter, &msgs[0], 2) != 2 ) {
@@ -427,21 +425,24 @@ static ssize_t fw_version_show(struct device *dev, struct device_attribute *da,
 
 	project = i2c_read_word(data->client,GD3X_FW_VER_PROJECT_REG);
 	if(project<0)
-		return "N/A";
+		goto error;
 	board = i2c_read_word(data->client,GD3X_FW_VER_BOARD_REG);
 	if(board<0)
-		return "N/A";
+		goto error;
 	adapt = i2c_read_word(data->client,GD3X_FW_VER_ADAPT_REG);
 	if(adapt<0)
-		return "N/A";
+		goto error;
 	ver = i2c_read_word(data->client,GD3X_FW_VER_REG);
 	if(ver<0)
-		return "N/A";
+		goto error;
 	type = i2c_read_word(data->client,GD3X_FW_VER_TYPE_REG);
 	if(type<0)
-		return "N/A";
+		goto error;
 
 	return scnprintf(buf, PAGE_SIZE, "%d.%d.%d.%d.%d\n", project, board, adapt, ver, type);
+
+error:
+	return scnprintf(buf, PAGE_SIZE, "N/A\n");
 }
 
 static ssize_t bl_version_show(struct device *dev, struct device_attribute *da,
