@@ -2347,7 +2347,8 @@ define Device/teleofis_lt70
   strongswan-mod-connmark strongswan-mod-xauth-generic \
   luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
-  snmpd-ssl luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
+  snmpd-ssl snmp-utils-ssl snmptrapd-ssl \
+  luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
   xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
   base-files-common base-files-lt70 \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
