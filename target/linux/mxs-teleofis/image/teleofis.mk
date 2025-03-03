@@ -54,6 +54,7 @@ define Device/teleofis_rtux68v2
   pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
   smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
   report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
+  snmpd-ssl snmp-utils-ssl luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
   openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
   luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
   strongswan strongswan-default luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
@@ -61,6 +62,7 @@ define Device/teleofis_rtux68v2
   base-files-common base-files-rtux68 \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  zabbix-agentd-ssl zabbix-config luci-app-zabbix luci-i18n-zabbix-en luci-i18n-zabbix-ru \
   htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd bc \
   ntpd ntp-utils uboot-envtools block-mount tcpdump \
   mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
@@ -68,7 +70,7 @@ define Device/teleofis_rtux68v2
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
-  lsof wpad hostapd snmpd socat python3 python3-pip python3-pyserial iconv \
+  lsof wpad hostapd socat python3 python3-pip python3-pyserial iconv \
   pps-tools i2c-tools usbutils pptpd ppp-mod-pptp ntfs-3g libustream-openssl
   IMAGES := nand.ubi sysupgrade.tar 
   IMAGE_NAME = $$(IMAGE_PREFIX)-$$(1).$$(2)
