@@ -277,12 +277,22 @@ static int i2c_transfer_words(u32 op, struct i2c_client *client, u32 reg, unsign
 
 static int i2c_write_word(struct i2c_client *client, u32 reg, unsigned word)
 {
-	return i2c_transfer_words(0, client, reg, word);
+	int result;
+	result = i2c_transfer_words(0, client, reg, word);
+	if(result == -EIO) {
+		result = i2c_transfer_words(0, client, reg, word);
+	}
+	return result;
 }
 
 static int i2c_read_word(struct i2c_client *client, u32 reg)
 {
-	return i2c_transfer_words(1, client, reg, 0);
+	int result;
+	result = i2c_transfer_words(1, client, reg, 0);
+	if(result == -EIO) {
+		result = i2c_transfer_words(1, client, reg, 0);
+	}
+	return result;
 }
 
 static void gd3x_set(struct gpio_chip *chip, unsigned offset, int value){
