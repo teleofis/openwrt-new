@@ -2329,9 +2329,11 @@ define Device/teleofis_lt70
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
   luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
-  luci-proto-nbiot luci-proto-gre luci-proto-ip \
+  luci-proto-nbiot luci-proto-gre luci-proto-ip luci-proto-wireguard \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
-  luci-i18n-firewall-ru luci-i18n-opkg-ru \
+  luci-i18n-firewall-ru luci-i18n-opkg-ru luci-mod-rpc \
+  ddns-scripts wget-ssl bind-host luci-app-ddns luci-i18n-ddns-en luci-i18n-ddns-ru \
+  hotplug-generator luci-app-hotplug luci-i18n-hotplug-en luci-i18n-hotplug-ru \
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
   pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
