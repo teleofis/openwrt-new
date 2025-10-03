@@ -2367,8 +2367,9 @@ define Device/teleofis_lt70
   lsof socat iconv python3 python3-pip python3-pyserial\
   pps-tools i2c-tools usbutils libustream-openssl
   UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
-  IMAGES += mtd-all.bin
-  IMAGE/mtd-all.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs | pad-to 32768k
+  IMAGES += mtd-all.bin spi-full.bin
+  IMAGE/mtd-all.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs | pad-rootfs | check-size 32768k
+  IMAGE/spi-full.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs | pad-to 32768k
 endef
 TARGET_DEVICES += teleofis_lt70
 
