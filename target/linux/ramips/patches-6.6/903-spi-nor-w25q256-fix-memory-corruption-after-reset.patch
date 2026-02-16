@@ -1,0 +1,21 @@
+--- a/drivers/mtd/spi-nor/core.c
++++ b/drivers/mtd/spi-nor/core.c
+@@ -13,6 +13,7 @@
+ #include <linux/device.h>
+ #include <linux/math64.h>
+ #include <linux/module.h>
++#include <linux/delay.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/spi-nor.h>
+ #include <linux/mutex.h>
+@@ -3345,6 +3346,10 @@
+ {
+ 	int ret;
+ 
++	mutex_lock(&nor->lock);
++	spi_nor_wait_till_ready_with_timeout(nor,DEFAULT_READY_WAIT_JIFFIES);
++	mdelay(100);
++
+ 	/* restore the addressing mode */
+ 	if (nor->addr_nbytes == 4 && !(nor->flags & SNOR_F_4B_OPCODES) &&
+ 	    nor->flags & SNOR_F_BROKEN_RESET) {

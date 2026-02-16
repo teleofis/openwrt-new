@@ -252,7 +252,8 @@ ramips_setup_macs()
 		wan_mac=$(macaddr_add "$label_mac" 3)
 		lan_mac=$label_mac
 		;;
-	dlink,dir-860l-b1)
+	dlink,dir-860l-b1|\
+	teleofis,lt70)
 		lan_mac=$(mtd_get_mac_ascii factory lanmac)
 		wan_mac=$(mtd_get_mac_ascii factory wanmac)
 		;;

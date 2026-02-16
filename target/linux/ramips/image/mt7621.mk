@@ -3637,3 +3637,62 @@ define Device/zyxel_wsm20
   KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | znet-header V1.00(ABZF.0)C0
 endef
 TARGET_DEVICES += zyxel_wsm20
+
+define Device/teleofis_lt70
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := Teleofis
+  DEVICE_MODEL := LT70
+  DEVICE_PACKAGES := kmod-sdhci-mt7620 \
+  kmod-pps kmod-pps-ldisc kmod-pps-gpio kmod-usb3 \
+  kmod-usb-serial kmod-usb-serial-ftdi kmod-usb-serial-cp210x \
+  kmod-usb-serial-ch341 kmod-usb-serial-option kmod-usb-net-rndis kmod-usb-net-qmi-wwan \
+  kmod-button-hotplug kmod-mtd-rw kmod-wireguard \
+  kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
+  kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
+  kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
+  kmod-crypto-hw-eip93 \
+  luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
+  luci-proto-nbiot luci-proto-gre luci-proto-ip luci-proto-wireguard \
+  luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
+  luci-i18n-firewall-ru luci-i18n-opkg-ru luci-mod-rpc \
+  luci-app-wireguard luci-i18n-wireguard-en luci-i18n-wireguard-ru \
+  ddns-scripts wget-ssl bind-host luci-app-ddns luci-i18n-ddns-en luci-i18n-ddns-ru \
+  hotplug-generator luci-app-hotplug luci-i18n-hotplug-en luci-i18n-hotplug-ru \
+  ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
+  pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
+  pollmydevice luci-app-pollmydevice luci-i18n-pollmydevice-en luci-i18n-pollmydevice-ru \
+  pptpd pptpd-ext ppp-mod-pptp luci-app-pptpd luci-i18n-pptpd-en luci-i18n-pptpd-ru \
+  smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
+  report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
+  openvpn-openssl luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
+  luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
+  strongswan strongswan-charon strongswan-ipsec strongswan-mod-aes strongswan-mod-des \
+  strongswan-mod-gmp strongswan-mod-hmac strongswan-mod-kernel-netlink strongswan-mod-rc2 \
+  strongswan-mod-sha2 strongswan-mod-md5 strongswan-mod-revocation strongswan-mod-constraints \
+  strongswan-mod-pkcs1 strongswan-mod-pgp strongswan-mod-dnskey strongswan-mod-sshkey \
+  strongswan-mod-stroke strongswan-mod-updown strongswan-mod-x509 strongswan-mod-xcbc \
+  strongswan-mod-pem strongswan-mod-fips-prf strongswan-mod-attr strongswan-mod-resolve \
+  strongswan-mod-connmark strongswan-mod-socket-default strongswan-mod-xauth-generic \
+  luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
+  mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
+  snmpd-ssl snmp-utils-ssl snmptrapd-ssl \
+  luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
+  xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
+  base-files-common base-files-lt70 \
+  simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
+  iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
+  htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients bc \
+  ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
+  mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
+  collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
+  collectd-mod-uptime collectd-mod-processes collectd-mod-network \
+  collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
+  collectd-mod-thermal collectd-mod-exec \
+  event-handler svcontrol svupgrade \
+  lsof socat iconv python3 python3-pip python3-pyserial\
+  pps-tools i2c-tools usbutils libustream-openssl libopenssl-devcrypto
+endef
+TARGET_DEVICES += teleofis_lt70
