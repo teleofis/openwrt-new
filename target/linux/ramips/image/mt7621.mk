@@ -2335,6 +2335,7 @@ define Device/teleofis_lt70
   luci-i18n-firewall-ru luci-i18n-opkg-ru luci-mod-rpc \
   luci-app-wireguard luci-i18n-wireguard-en luci-i18n-wireguard-ru \
   ddns-scripts wget-ssl bind-host luci-app-ddns luci-i18n-ddns-en luci-i18n-ddns-ru \
+  eoip luci-app-eoip luci-i18n-eoip-en luci-i18n-eoip-ru \
   hotplug-generator luci-app-hotplug luci-i18n-hotplug-en luci-i18n-hotplug-ru \
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
