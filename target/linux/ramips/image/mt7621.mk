@@ -2349,7 +2349,7 @@ define Device/teleofis_lt70
   strongswan-mod-sha2 strongswan-mod-md5 strongswan-mod-revocation strongswan-mod-constraints \
   strongswan-mod-pkcs1 strongswan-mod-pgp strongswan-mod-dnskey strongswan-mod-sshkey \
   strongswan-mod-pem strongswan-mod-fips-prf strongswan-mod-attr strongswan-mod-resolve \
-  strongswan-mod-connmark strongswan-mod-xauth-generic \
+  strongswan-mod-connmark strongswan-mod-xauth-generic strongswan-mod-vici \
   luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
   snmpd-ssl snmp-utils-ssl snmptrapd-ssl \
@@ -2367,7 +2367,8 @@ define Device/teleofis_lt70
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
   event-handler svcontrol svupgrade \
-  lsof socat iconv python3 python3-pip python3-pyserial\
+  frr frr-bgpd frr-nhrpd frr-ospfd frr-vtysh \
+  lsof socat iconv python3 python3-pip python3-pyserial \
   pps-tools i2c-tools usbutils libustream-openssl libopenssl-devcrypto
   UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
   IMAGES += mtd-all.bin spi-full.bin
