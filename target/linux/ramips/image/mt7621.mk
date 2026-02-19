@@ -2328,6 +2328,7 @@ define Device/teleofis_lt70
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
+  kmod-crypto-hw-eip93 kmod-crypto-cbc kmod-crypto-ctr kmod-cryptodev kmod-nft-xfrm \
   luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
   luci-proto-nbiot luci-proto-gre luci-proto-ip luci-proto-wireguard \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
@@ -2341,7 +2342,7 @@ define Device/teleofis_lt70
   pptpd pptpd-ext ppp-mod-pptp luci-app-pptpd luci-i18n-pptpd-en luci-i18n-pptpd-ru \
   smstools3-fix smscontrol luci-app-smscontrol luci-i18n-smscontrol-en luci-i18n-smscontrol-ru \
   report luci-app-report luci-i18n-report-en luci-i18n-report-ru \
-  openvpn-mbedtls luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
+  openvpn-openssl luci-app-openvpn luci-i18n-openvpn-en luci-i18n-openvpn-ru \
   luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-ru \
   strongswan strongswan-minimal strongswan-ipsec strongswan-mod-des strongswan-mod-rc2 \
   strongswan-mod-sha2 strongswan-mod-md5 strongswan-mod-revocation strongswan-mod-constraints \
@@ -2366,7 +2367,7 @@ define Device/teleofis_lt70
   collectd-mod-thermal collectd-mod-exec \
   event-handler svcontrol svupgrade \
   lsof socat iconv python3 python3-pip python3-pyserial\
-  pps-tools i2c-tools usbutils libustream-openssl
+  pps-tools i2c-tools usbutils libustream-openssl libopenssl-devcrypto
   UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
   IMAGES += mtd-all.bin spi-full.bin
   IMAGE/mtd-all.bin := append-uboot | pad-to 320k | append-kernel | append-rootfs | pad-rootfs | check-size 32768k
