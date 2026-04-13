@@ -2367,7 +2367,7 @@ define Device/teleofis_lt70
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
   event-handler svcontrol svupgrade \
-  frr frr-bgpd frr-nhrpd frr-ospfd frr-vtysh \
+  frr frr-bgpd frr-nhrpd frr-ospfd frr-staticd frr-vtysh frr-watchfrr frr-zebra \
   lsof socat iconv python3 python3-pip python3-pyserial \
   pps-tools i2c-tools usbutils libustream-openssl libopenssl-devcrypto
   UBOOT_PATH := $(STAGING_DIR_IMAGE)/teleofis_lt70-u-boot-mt7621.bin
