@@ -2360,7 +2360,7 @@ define Device/teleofis_lt70
   iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
   htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients bc \
-  ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
+  ntpd ntp-utils uboot-envtools block-mount e2fsprogs exfat-mkfs fdisk f2fs-tools parted tcpdump \
   mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
   collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
