@@ -2356,6 +2356,7 @@ define Device/teleofis_lt70
   luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
   xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
   base-files-common base-files-lt70 \
+  rms luci-app-rms luci-i18n-rms-en luci-i18n-rms-ru \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
