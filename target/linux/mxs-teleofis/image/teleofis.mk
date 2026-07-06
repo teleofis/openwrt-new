@@ -46,7 +46,7 @@ define Device/teleofis_rtux68v2
   kmod-usb-hid-cp2112 kmod-w1 kmod-w1-master-ds2482 kmod-w1-slave-therm \
   kmod-ipt-nat-extra kmod-tun kmod-crypto-gcm \
   kmod-nf-nat kmod-nf-nat6 kmod-nf-nathelper kmod-nf-nathelper-extra \
-  luci luci-theme-teleofis luci-proto-3g luci-proto-qmi \
+  luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
   luci-proto-nbiot luci-proto-gre luci-proto-ip \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
   luci-i18n-firewall-ru luci-i18n-opkg-ru \
@@ -62,6 +62,7 @@ define Device/teleofis_rtux68v2
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
   base-files-common base-files-rtux68 \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
+  rms luci-app-rms luci-i18n-rms-en luci-i18n-rms-ru \
   iolines luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   zabbix-agentd-ssl zabbix-config luci-app-zabbix luci-i18n-zabbix-en luci-i18n-zabbix-ru \
   htop iperf3 nano picocom zram-swap stm32flash gpsd gpsd-clients xl2tpd bc \
