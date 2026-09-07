@@ -2358,7 +2358,7 @@ define Device/teleofis_lt70
   base-files-common base-files-lt70 \
   rms luci-app-rms luci-i18n-rms-en luci-i18n-rms-ru \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
-  iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
+  iolines-lt70 iolinesd luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
   htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients bc \
   ntpd ntp-utils uboot-envtools block-mount e2fsprogs exfat-mkfs fdisk f2fs-tools parted tcpdump \
