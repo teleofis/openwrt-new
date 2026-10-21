@@ -1,0 +1,31 @@
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -1155,6 +1155,18 @@
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called gpio-tpic2810.
+ 
++config GPIO_GD3X
++	tristate "GD3X I2C supervisor MCU (GPIO, ADC)"
++	depends on IIO
++	select CRC32
++	help
++	  Say yes here to enable the driver for the GD3X supervisor MCU
++	  connected over I2C. It provides 32 GPIO lines, ADC channels via
++	  IIO and sysfs attributes for supervisor control.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called gpio-gd3x.
++
+ config GPIO_TS4900
+ 	tristate "Technologic Systems FPGA I2C GPIO"
+ 	depends on SOC_IMX6 || COMPILE_TEST
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -64,6 +64,7 @@
+ obj-$(CONFIG_GPIO_F7188X)		+= gpio-f7188x.o
+ obj-$(CONFIG_GPIO_FTGPIO010)		+= gpio-ftgpio010.o
+ obj-$(CONFIG_GPIO_FXL6408)		+= gpio-fxl6408.o
++obj-$(CONFIG_GPIO_GD3X)			+= gpio-gd3x.o
+ obj-$(CONFIG_GPIO_GE_FPGA)		+= gpio-ge.o
+ obj-$(CONFIG_GPIO_GPIO_MM)		+= gpio-gpio-mm.o
+ obj-$(CONFIG_GPIO_GRGPIO)		+= gpio-grgpio.o

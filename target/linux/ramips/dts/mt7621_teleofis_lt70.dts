@@ -70,6 +70,7 @@
 		gpio = <&gpio 32 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-always-on;
+		regulator-boot-on;
 	};
 };
 
@@ -80,8 +81,8 @@
 		compatible = "dallas,ds3231";
 		reg = <0x68>;
 	};
-	gd3x: gd3x@11 {
-		compatible = "sz,gd3x";
+	gd3x: gpio@11 {
+		compatible = "teleofis,lt70-gd3x", "sz,gd3x";
 		reg = <0x11>;
 		gpio-controller;
 		#gpio-cells = <2>;

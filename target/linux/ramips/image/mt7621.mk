@@ -3652,13 +3652,14 @@ define Device/teleofis_lt70
   kmod-usb-storage kmod-usb-storage-extras kmod-usb-acm \
   kmod-fs-exfat kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-fs-ntfs kmod-fs-nfs \
   kmod-ath10k ath10k-firmware-qca6174-fn-link-8274b-pr \
-  kmod-crypto-hw-eip93 \
+  kmod-crypto-hw-eip93 kmod-crypto-cbc kmod-crypto-ctr kmod-cryptodev kmod-nft-xfrm \
   luci luci-ssl-openssl luci-theme-teleofis luci-proto-3g luci-proto-qmi \
   luci-proto-nbiot luci-proto-gre luci-proto-ip luci-proto-wireguard \
   luci-i18n-base-en luci-i18n-firewall-en luci-i18n-opkg-en luci-i18n-base-ru \
   luci-i18n-firewall-ru luci-i18n-opkg-ru luci-mod-rpc \
   luci-app-wireguard luci-i18n-wireguard-en luci-i18n-wireguard-ru \
   ddns-scripts wget-ssl bind-host luci-app-ddns luci-i18n-ddns-en luci-i18n-ddns-ru \
+  eoip luci-app-eoip luci-i18n-eoip-en luci-i18n-eoip-ru \
   hotplug-generator luci-app-hotplug luci-i18n-hotplug-en luci-i18n-hotplug-ru \
   ttyd luci-app-ttyd luci-i18n-ttyd-en luci-i18n-ttyd-ru \
   pingcontrol luci-app-pingcontrol luci-i18n-pingcontrol-en luci-i18n-pingcontrol-ru \
@@ -3674,25 +3675,28 @@ define Device/teleofis_lt70
   strongswan-mod-pkcs1 strongswan-mod-pgp strongswan-mod-dnskey strongswan-mod-sshkey \
   strongswan-mod-stroke strongswan-mod-updown strongswan-mod-x509 strongswan-mod-xcbc \
   strongswan-mod-pem strongswan-mod-fips-prf strongswan-mod-attr strongswan-mod-resolve \
-  strongswan-mod-connmark strongswan-mod-socket-default strongswan-mod-xauth-generic \
+  strongswan-mod-connmark strongswan-mod-socket-default \
+  strongswan-mod-xauth-generic strongswan-mod-vici \
   luci-app-strongswan luci-i18n-strongswan-en luci-i18n-strongswan-ru \
   mwan3 luci-app-mwan3 luci-i18n-mwan3-en luci-i18n-mwan3-ru \
   snmpd-ssl snmp-utils-ssl snmptrapd-ssl \
   luci-app-snmpd-ssl luci-i18n-snmpd-ssl-en luci-i18n-snmpd-ssl-ru \
   xl2tpd xl2tpd-ext luci-app-xl2tpd luci-i18n-xl2tpd-en luci-i18n-xl2tpd-ru \
   base-files-common base-files-lt70 \
+  rms luci-app-rms luci-i18n-rms-en luci-i18n-rms-ru \
   simman2 luci-app-simman2 luci-i18n-simman2-en luci-i18n-simman2-ru \
   iolines-lt70 luci-app-iolines luci-i18n-iolines-en luci-i18n-iolines-ru \
   powersupply luci-app-powersupply luci-i18n-powersupply-en luci-i18n-powersupply-ru \
   htop iperf3 nano picocom zram-swap stm32flash-gd gpsd gpsd-clients bc \
-  ntpd ntp-utils uboot-envtools block-mount fdisk f2fs-tools tcpdump \
+  ntpd ntp-utils uboot-envtools block-mount e2fsprogs exfat-mkfs fdisk f2fs-tools parted tcpdump \
   mosquitto-ssl mosquitto-client-ssl coreutils coreutils-sleep coreutils-stty \
   collectd collectd-mod-df collectd-mod-interface collectd-mod-load \
   collectd-mod-uptime collectd-mod-processes collectd-mod-network \
   collectd-mod-cpu collectd-mod-cpufreq collectd-mod-memory collectd-mod-ping \
   collectd-mod-thermal collectd-mod-exec \
   event-handler svcontrol svupgrade \
-  lsof socat iconv python3 python3-pip python3-pyserial\
+  frr frr-bgpd frr-nhrpd frr-ospfd frr-staticd frr-vtysh frr-watchfrr frr-zebra \
+  lsof socat iconv python3 python3-pip python3-pyserial \
   pps-tools i2c-tools usbutils libustream-openssl libopenssl-devcrypto
 endef
 TARGET_DEVICES += teleofis_lt70
