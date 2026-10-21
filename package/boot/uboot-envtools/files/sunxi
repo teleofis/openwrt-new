@@ -1,0 +1,32 @@
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
+
+[ -e /etc/config/ubootenv ] && exit 0
+
+touch /etc/config/ubootenv
+
+. /lib/uboot-envtools.sh
+. /lib/functions.sh
+
+board=$(board_name)
+
+case "$board" in
+teleofis,rtu1068v5)
+	# Two copies at 1 MiB and 1.125 MiB of the disk the board booted from
+	. /lib/upgrade/common.sh
+	if export_bootdevice && export_partdevice bootdisk 0; then
+		ubootenv_add_uci_config "/dev/$bootdisk" "0x100000" "0x10000"
+		ubootenv_add_uci_config "/dev/$bootdisk" "0x120000" "0x10000"
+	else
+		# try again on the next boot
+		rm -f /etc/config/ubootenv
+		exit 1
+	fi
+	;;
+esac
+
+config_load ubootenv
+config_foreach ubootenv_add_app_config
+
+exit 0

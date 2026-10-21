@@ -1,6 +1,13 @@
 platform_check_image() {
 	local diskdev partdev diff
 
+	case "$(board_name)" in
+	teleofis,rtu1068v5)
+		teleofis_ab_check_image "$1"
+		return $?
+		;;
+	esac
+
 	export_bootdevice && export_partdevice diskdev 0 || {
 		echo "Unable to determine upgrade device"
 		return 1
@@ -28,6 +35,12 @@ platform_check_image() {
 platform_copy_config() {
 	local partdev
 
+	case "$(board_name)" in
+	teleofis,rtu1068v5)
+		return 0
+		;;
+	esac
+
 	if export_partdevice partdev 1; then
 		mount -t vfat -o rw,noatime "/dev/$partdev" /mnt
 		cp -af "$UPGRADE_BACKUP" "/mnt/$BACKUP_FILE"
@@ -37,6 +50,13 @@ platform_copy_config() {
 
 platform_do_upgrade() {
 	local diskdev partdev diff
+
+	case "$(board_name)" in
+	teleofis,rtu1068v5)
+		teleofis_ab_do_upgrade "$1"
+		return $?
+		;;
+	esac
 
 	export_bootdevice && export_partdevice diskdev 0 || {
 		echo "Unable to determine upgrade device"

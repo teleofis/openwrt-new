@@ -27,6 +27,21 @@ define Build/sunxi-sdcard
 	rm -f $@.boot
 endef
 
+# Two firmware slots with a FIT kernel each, see gen_sunxi_ab_sdcard_img.sh.
+# Fixed sizes: A/B sysupgrade refuses an image whose layout differs from the disk
+SUNXI_AB_KERNEL_PARTSIZE=16
+SUNXI_AB_ROOTFS_PARTSIZE=200
+
+define Build/sunxi-sdcard-ab
+	./gen_sunxi_ab_sdcard_img.sh $@ \
+		$(IMAGE_KERNEL) \
+		$(IMAGE_ROOTFS) \
+		$(SUNXI_AB_KERNEL_PARTSIZE) \
+		$(SUNXI_AB_ROOTFS_PARTSIZE) \
+		$(STAGING_DIR_IMAGE)/$(DEVICE_NAME)-u-boot-with-spl.bin \
+		$(IMG_PART_SIGNATURE)
+endef
+
 # why \x00\x00\x00\x00 for zImage-initramfs
 define Device/Default
   PROFILES := Default

@@ -20,6 +20,9 @@ sunxi_setup_interfaces()
 	olimex,a13-olinuxino-micro)
 		ucidef_set_interface_lan "wlan0"
 		;;
+	teleofis,rtu1068v5)
+		ucidef_set_interface_lan "eth0 eth1"
+		;;
 	xunlong,orangepi-r1)
 		ucidef_set_interfaces_lan_wan "eth0" "eth1"
 		;;
